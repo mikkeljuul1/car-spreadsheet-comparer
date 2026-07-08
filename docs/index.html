@@ -1151,6 +1151,22 @@
         return;
       }
 
+      const overallScores = new Map(cars.map(car => [car, 0]));
+      for (const result of scoredResults) {
+        if (!result.overallWinners.length) continue;
+        const points = 1 / result.overallWinners.length;
+        for (const name of result.overallWinners) {
+          overallScores.set(name, (overallScores.get(name) ?? 0) + points);
+        }
+      }
+      const bestOverallScore = Math.max(0, ...overallScores.values());
+      const grandWinners = bestOverallScore > 0
+        ? [...overallScores.entries()].filter(([_car, score]) => score === bestOverallScore).map(([car]) => car)
+        : [];
+      const grandWinnerText = grandWinners.length
+        ? `Overall winner: ${grandWinners.join(" / ")} (${formatScore(bestOverallScore)} of ${scoredResults.length} categories)`
+        : `${scoredResults.length} categories with scored winners`;
+
       const cards = scoredResults.map(result => {
         const overall = result.overallWinners.length ? result.overallWinners.join(" / ") : "No clear winner";
         const scoreText = result.overallWinners.length
@@ -1175,7 +1191,7 @@
         <section class="panel winners-overview">
           <div class="overview-head">
             <h2>Winner Overview</h2>
-            <span>${scoredResults.length} categories with scored winners</span>
+            <span>${escapeHtml(grandWinnerText)}</span>
           </div>
           <div class="winner-grid">${cards}</div>
         </section>
