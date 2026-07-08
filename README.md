@@ -82,6 +82,7 @@ The app also sends these custom events:
 
 - `workbook_loaded`: includes loaded tab count, total tab count, row count, static/live source, and snapshot timestamp.
 - `car_selected`: includes selected car name and selected car count.
+- `selection_changed`: sent for every select/deselect action using a stable event path, so total selection changes are easy to count.
 - `test_toggled`: includes test name, enabled/disabled state, and enabled test count.
 - `comparison_generated`: includes selected car names, enabled test names, car count, test count, category count, and scored category count.
 

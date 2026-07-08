@@ -720,31 +720,33 @@
           title: document.title,
         });
         for (const event of state.pendingAnalyticsEvents.splice(0)) {
-          sendAnalyticsEvent(event.name, event.props);
+          sendAnalyticsEvent(event.name, event.props, event.options);
         }
       });
       document.head.append(script);
     }
 
-    function sendAnalyticsEvent(name, props = {}) {
+    function sendAnalyticsEvent(name, props = {}, options = {}) {
       const params = new URLSearchParams();
-      for (const [key, value] of Object.entries(props)) {
-        if (value !== undefined && value !== null && value !== "") params.set(key, String(value));
+      if (options.includePropsInPath !== false) {
+        for (const [key, value] of Object.entries(props)) {
+          if (value !== undefined && value !== null && value !== "") params.set(key, String(value));
+        }
       }
       window.goatcounter.count({
         path: `/event/${name}${params.toString() ? `?${params}` : ""}`,
-        title: name.replace(/_/g, " "),
+        title: options.title ?? name.replace(/_/g, " "),
         event: true,
       });
     }
 
-    function trackEvent(name, props = {}) {
+    function trackEvent(name, props = {}, options = {}) {
       if (!analyticsEnabled()) return;
       if (!state.analyticsReady || typeof window.goatcounter?.count !== "function") {
-        state.pendingAnalyticsEvents.push({ name, props });
+        state.pendingAnalyticsEvents.push({ name, props, options });
         return;
       }
-      sendAnalyticsEvent(name, props);
+      sendAnalyticsEvent(name, props, options);
     }
 
     function loadedSheets() {
@@ -1207,8 +1209,10 @@
       for (const button of carList.querySelectorAll("button[data-car]")) {
         button.addEventListener("click", () => {
           const car = button.dataset.car;
+          let action = "selected";
           if (state.selectedCars.has(car)) {
             state.selectedCars.delete(car);
+            action = "deselected";
           } else {
             state.selectedCars.add(car);
             trackEvent("car_selected", {
@@ -1216,6 +1220,14 @@
               selected_car_count: state.selectedCars.size,
             });
           }
+          trackEvent("selection_changed", {
+            action,
+            car,
+            selected_car_count: state.selectedCars.size,
+          }, {
+            includePropsInPath: false,
+            title: `selection changed (${action}, ${state.selectedCars.size} selected)`,
+          });
           renderCars();
           renderSelectedCars();
           renderComparison();
@@ -1228,7 +1240,16 @@
       selectedCarsNode.innerHTML = cars.map(car => `<span class="chip">${escapeHtml(car)} <button data-remove="${escapeHtml(car)}" title="Remove">x</button></span>`).join("");
       for (const button of selectedCarsNode.querySelectorAll("button[data-remove]")) {
         button.addEventListener("click", () => {
-          state.selectedCars.delete(button.dataset.remove);
+          const car = button.dataset.remove;
+          state.selectedCars.delete(car);
+          trackEvent("selection_changed", {
+            action: "deselected",
+            car,
+            selected_car_count: state.selectedCars.size,
+          }, {
+            includePropsInPath: false,
+            title: `selection changed (deselected, ${state.selectedCars.size} selected)`,
+          });
           renderCars();
           renderSelectedCars();
           renderComparison();
