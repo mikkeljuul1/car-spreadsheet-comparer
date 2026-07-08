@@ -578,6 +578,128 @@
         text-align: left;
       }
     }
+
+    @media (max-width: 560px) {
+      body {
+        background:
+          linear-gradient(135deg, rgba(32, 59, 70, 0.08), transparent 28rem),
+          var(--paper);
+      }
+
+      header {
+        position: static;
+        padding: 0.85rem;
+      }
+
+      h1 {
+        font-size: 1.35rem;
+      }
+
+      .credit {
+        font-size: 0.78rem;
+      }
+
+      .topbar {
+        gap: 0.62rem;
+      }
+
+      .status {
+        min-width: 0;
+        font-size: 0.82rem;
+      }
+
+      .layout {
+        gap: 0.75rem;
+        padding: 0.75rem;
+      }
+
+      aside {
+        gap: 0.75rem;
+      }
+
+      .block {
+        padding: 0.75rem;
+      }
+
+      .tests {
+        max-height: 9rem;
+        overflow: auto;
+      }
+
+      .test-chip {
+        font-size: 0.78rem;
+      }
+
+      .car-list {
+        max-height: 18rem;
+      }
+
+      .car-row {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+      }
+
+      .count {
+        padding-top: 0;
+      }
+
+      .chip {
+        max-width: 100%;
+        align-items: flex-start;
+        line-height: 1.2;
+        overflow-wrap: anywhere;
+      }
+
+      .chip button {
+        flex: 0 0 auto;
+        padding-left: 0.2rem;
+      }
+
+      .winner-grid {
+        grid-template-columns: 1fr;
+        padding: 0.7rem;
+      }
+
+      .overview-head,
+      .sheet-title,
+      .raw-head {
+        padding: 0.72rem;
+      }
+
+      .sheet-title {
+        display: grid;
+        gap: 0.35rem;
+      }
+
+      .metric-winner-list li {
+        grid-template-columns: 1fr;
+        gap: 0.18rem;
+      }
+
+      .metric-separator {
+        display: none;
+      }
+
+      .table-wrap {
+        max-height: 26rem;
+      }
+
+      table {
+        min-width: 34rem;
+      }
+
+      th, td {
+        padding: 0.48rem 0.52rem;
+      }
+
+      td.metric {
+        width: 9rem;
+      }
+
+      .raw-title h2 {
+        font-size: 1rem;
+      }
+    }
   </style>
 </head>
 <body>
