@@ -92,6 +92,23 @@
       color: var(--track);
     }
 
+    .brand-block {
+      display: grid;
+      gap: 0.22rem;
+    }
+
+    .credit {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .credit a {
+      color: var(--track-2);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.16em;
+    }
+
     label {
       display: grid;
       gap: 0.28rem;
@@ -507,7 +524,10 @@
   <div class="app">
     <header>
       <div class="topbar">
-        <h1>Car Comparer</h1>
+        <div class="brand-block">
+          <h1>Car Comparer</h1>
+          <div class="credit">Spreadsheet created and maintained by <a href="https://www.youtube.com/@bjornnyland" target="_blank" rel="noopener noreferrer">Tesla Bjørn</a>.</div>
+        </div>
         <label>Spreadsheet URL
           <input id="sourceInput" autocomplete="off">
         </label>
