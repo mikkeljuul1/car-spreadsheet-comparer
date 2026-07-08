@@ -74,17 +74,15 @@ The included GitHub Actions workflow refreshes `docs/workbook.json` daily and ca
 
 ## Analytics
 
-The static website includes GoatCounter analytics support. Analytics is disabled on localhost and enabled on the GitHub Pages host `mikkeljuul1.github.io`.
+The static website includes GoatCounter analytics support for car popularity. Analytics is disabled on localhost and enabled on the GitHub Pages host `mikkeljuul1.github.io`.
 
-To activate it, create a free GoatCounter site with the code `mikkeljuul1`. GoatCounter will then track normal site analytics such as visits, page views, referrers, countries, devices, browsers, and visit duration.
+To activate it, create a free GoatCounter site with the code `mikkeljuul1`.
 
-The app also sends these custom events:
+The app only sends car selection events, so GoatCounter's Pages list stays focused on car popularity:
 
-- `workbook_loaded`: includes loaded tab count, total tab count, row count, static/live source, and snapshot timestamp.
-- `car_selected`: includes selected car name and selected car count. Custom events use GoatCounter's no-session mode so repeated selections of the same car are counted.
-- `selection_changed`: sent for every select/deselect action using a stable event path, so total selection changes are easy to count.
-- `test_toggled`: includes test name, enabled/disabled state, and enabled test count.
-- `comparison_generated`: includes selected car names, enabled test names, car count, test count, category count, and scored category count.
+- `car/<car-name>`: sent whenever a car is selected.
+
+The event title is the full car name, and custom events use GoatCounter's no-session mode so repeated selections of the same car are counted.
 
 ## Command-Line Usage
 

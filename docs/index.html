@@ -715,10 +715,6 @@
       script.src = analyticsConfig.scriptUrl;
       script.addEventListener("load", () => {
         state.analyticsReady = true;
-        window.goatcounter.count({
-          path: `${window.location.pathname}${window.location.search}`,
-          title: document.title,
-        });
         for (const event of state.pendingAnalyticsEvents.splice(0)) {
           sendAnalyticsEvent(event.name, event.props, event.options);
         }
@@ -734,7 +730,7 @@
         }
       }
       window.goatcounter.count({
-        path: `event/${name}${params.toString() ? `?${params}` : ""}`,
+        path: options.path ?? `event/${name}${params.toString() ? `?${params}` : ""}`,
         title: options.title ?? name.replace(/_/g, " "),
         event: true,
         no_session: options.noSession ?? true,
@@ -748,6 +744,10 @@
         return;
       }
       sendAnalyticsEvent(name, props, options);
+    }
+
+    function analyticsSlug(value) {
+      return normalizedKey(value).replace(/\s+/g, "-") || "unknown-car";
     }
 
     function loadedSheets() {
@@ -1130,13 +1130,6 @@
         const summary = state.workbook.summary;
         const snapshotText = result.staticSnapshot && state.workbook.generatedAt ? ` snapshot ${state.workbook.generatedAt.slice(0, 10)}` : "";
         setStatus(`${summary.loadedSheetCount}/${summary.sheetCount} tabs, ${summary.rowCount} rows${snapshotText}`);
-        trackEvent("workbook_loaded", {
-          loaded_tabs: summary.loadedSheetCount,
-          total_tabs: summary.sheetCount,
-          row_count: summary.rowCount,
-          static_snapshot: result.staticSnapshot ? "yes" : "no",
-          generated_at: state.workbook.generatedAt ?? "live",
-        });
       } catch (error) {
         messages.innerHTML = `<div class="panel error">${escapeHtml(error.message)}</div>`;
         setStatus("Load failed");
@@ -1174,11 +1167,6 @@
         label.querySelector("input").addEventListener("change", event => {
           if (event.target.checked) state.selectedGids.add(sheet.gid);
           else state.selectedGids.delete(sheet.gid);
-          trackEvent("test_toggled", {
-            test: sheet.title,
-            enabled: event.target.checked ? "yes" : "no",
-            enabled_test_count: state.selectedGids.size,
-          });
           pruneUnavailableSelectedCars();
           renderTests();
           renderCars();
@@ -1210,25 +1198,19 @@
       for (const button of carList.querySelectorAll("button[data-car]")) {
         button.addEventListener("click", () => {
           const car = button.dataset.car;
-          let action = "selected";
           if (state.selectedCars.has(car)) {
             state.selectedCars.delete(car);
-            action = "deselected";
           } else {
             state.selectedCars.add(car);
             trackEvent("car_selected", {
               car,
               selected_car_count: state.selectedCars.size,
+            }, {
+              includePropsInPath: false,
+              path: `car/${analyticsSlug(car)}`,
+              title: car,
             });
           }
-          trackEvent("selection_changed", {
-            action,
-            car,
-            selected_car_count: state.selectedCars.size,
-          }, {
-            includePropsInPath: false,
-            title: `selection changed (${action}, ${state.selectedCars.size} selected)`,
-          });
           renderCars();
           renderSelectedCars();
           renderComparison();
@@ -1243,14 +1225,6 @@
         button.addEventListener("click", () => {
           const car = button.dataset.remove;
           state.selectedCars.delete(car);
-          trackEvent("selection_changed", {
-            action: "deselected",
-            car,
-            selected_car_count: state.selectedCars.size,
-          }, {
-            includePropsInPath: false,
-            title: `selection changed (deselected, ${state.selectedCars.size} selected)`,
-          });
           renderCars();
           renderSelectedCars();
           renderComparison();
@@ -1371,25 +1345,6 @@
       return "";
     }
 
-    function trackComparisonGenerated(cars, results) {
-      const scoredResults = results.filter(result => result.metricWinners.length);
-      const signature = JSON.stringify({
-        cars,
-        tests: enabledSheets().map(sheet => sheet.gid),
-        categories: results.map(result => result.sheet.gid),
-      });
-      if (signature === state.lastComparisonSignature) return;
-      state.lastComparisonSignature = signature;
-      trackEvent("comparison_generated", {
-        car_count: cars.length,
-        cars: cars.join(" | "),
-        enabled_test_count: state.selectedGids.size,
-        enabled_tests: enabledSheets().map(sheet => sheet.title).join(" | "),
-        category_count: results.length,
-        scored_category_count: scoredResults.length,
-      });
-    }
-
     function renderComparison() {
       const cars = [...state.selectedCars].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
       if (!state.workbook) {
@@ -1410,7 +1365,6 @@
         .filter(result => result.rows.length || result.presentCount > 0);
 
       renderWinnerOverview(results, cars);
-    trackComparisonGenerated(cars, results);
 
       const sections = [];
       for (const result of results) {
