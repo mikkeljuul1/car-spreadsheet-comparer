@@ -203,22 +203,24 @@
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 0.5rem;
-      align-items: center;
+      align-items: start;
       text-align: left;
       background: #fffdf8;
     }
 
     .car-row span:first-child {
       min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      overflow-wrap: anywhere;
+      white-space: normal;
+      line-height: 1.25;
     }
 
     .count {
       color: var(--muted);
       font-size: 0.76rem;
       font-weight: 700;
+      padding-top: 0.08rem;
+      white-space: nowrap;
     }
 
     .selected-cars {
@@ -526,7 +528,7 @@
       <div class="topbar">
         <div class="brand-block">
           <h1>Car Comparer</h1>
-          <div class="credit">Spreadsheet created and maintained by <a href="https://www.youtube.com/@bjornnyland" target="_blank" rel="noopener noreferrer">Tesla Bjørn</a>.</div>
+          <div class="credit">Spreadsheet created and maintained by <a href="https://www.youtube.com/@bjornnyland" target="_blank" rel="noopener noreferrer">Bjørn Nyland</a>.</div>
         </div>
         <label>Spreadsheet URL
           <input id="sourceInput" autocomplete="off">
@@ -1059,9 +1061,20 @@
       }
     }
 
+    function searchTokens(value) {
+      return normalizedKey(value).split(/\s+/).filter(Boolean);
+    }
+
+    function carMatchesSearch(car, query) {
+      const tokens = searchTokens(query);
+      if (!tokens.length) return true;
+      const searchable = normalizedKey([car.name, ...car.aliases].join(" "));
+      return tokens.every(token => searchable.includes(token));
+    }
+
     function renderCars() {
-      const query = carSearch.value.trim().toLowerCase();
-      const cars = carIndex().filter(car => !query || car.name.toLowerCase().includes(query)).slice(0, 250);
+      const query = carSearch.value.trim();
+      const cars = carIndex().filter(car => carMatchesSearch(car, query)).slice(0, 250);
       carList.innerHTML = cars.map(car => {
         const active = state.selectedCars.has(car.name) ? " active" : "";
         return `<button class="car-row${active}" data-car="${escapeHtml(car.name)}"><span>${escapeHtml(car.name)}</span><span class="count">${car.sheets.size} tabs</span></button>`;

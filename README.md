@@ -6,7 +6,7 @@ The default source is:
 
 https://docs.google.com/spreadsheets/d/1V6ucyFGKWuSQzvI8lMzvvWJHrBS82echMVJH37kwgjE
 
-Spreadsheet data is created and maintained by [Tesla Bjørn](https://www.youtube.com/@bjornnyland).
+Spreadsheet data is created and maintained by [Bjørn Nyland](https://www.youtube.com/@bjornnyland).
 
 ## Requirements
 
