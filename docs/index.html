@@ -734,9 +734,10 @@
         }
       }
       window.goatcounter.count({
-        path: `/event/${name}${params.toString() ? `?${params}` : ""}`,
+        path: `event/${name}${params.toString() ? `?${params}` : ""}`,
         title: options.title ?? name.replace(/_/g, " "),
         event: true,
+        no_session: options.noSession ?? true,
       });
     }
 
