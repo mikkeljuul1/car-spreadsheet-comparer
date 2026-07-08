@@ -661,6 +661,8 @@
       carAliases: new Map(),
       carEntries: new Map(),
       lastComparisonSignature: "",
+      analyticsReady: false,
+      pendingAnalyticsEvents: [],
     };
 
     const sourceInput = document.querySelector("#sourceInput");
@@ -705,16 +707,26 @@
 
     function loadAnalytics() {
       if (!analyticsEnabled()) return;
-      window.goatcounter = window.goatcounter || { no_onload: false };
+      window.goatcounter = window.goatcounter || {};
+      window.goatcounter.no_onload = true;
       const script = document.createElement("script");
       script.defer = true;
       script.dataset.goatcounter = `https://${analyticsConfig.code}.goatcounter.com/count`;
       script.src = analyticsConfig.scriptUrl;
+      script.addEventListener("load", () => {
+        state.analyticsReady = true;
+        window.goatcounter.count({
+          path: `${window.location.pathname}${window.location.search}`,
+          title: document.title,
+        });
+        for (const event of state.pendingAnalyticsEvents.splice(0)) {
+          sendAnalyticsEvent(event.name, event.props);
+        }
+      });
       document.head.append(script);
     }
 
-    function trackEvent(name, props = {}) {
-      if (!analyticsEnabled() || typeof window.goatcounter?.count !== "function") return;
+    function sendAnalyticsEvent(name, props = {}) {
       const params = new URLSearchParams();
       for (const [key, value] of Object.entries(props)) {
         if (value !== undefined && value !== null && value !== "") params.set(key, String(value));
@@ -724,6 +736,15 @@
         title: name.replace(/_/g, " "),
         event: true,
       });
+    }
+
+    function trackEvent(name, props = {}) {
+      if (!analyticsEnabled()) return;
+      if (!state.analyticsReady || typeof window.goatcounter?.count !== "function") {
+        state.pendingAnalyticsEvents.push({ name, props });
+        return;
+      }
+      sendAnalyticsEvent(name, props);
     }
 
     function loadedSheets() {
