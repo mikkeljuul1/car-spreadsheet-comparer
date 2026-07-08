@@ -72,6 +72,19 @@ To publish it for free:
 
 The included GitHub Actions workflow refreshes `docs/workbook.json` daily and can also be run manually from the Actions tab.
 
+## Analytics
+
+The static website includes Plausible analytics support. Analytics is disabled on localhost and enabled on the GitHub Pages host `mikkeljuul1.github.io`.
+
+To activate it, create a Plausible site for `mikkeljuul1.github.io`. Plausible will then track normal site analytics such as visits, page views, referrers, countries, devices, browsers, and visit duration.
+
+The app also sends these custom events:
+
+- `workbook_loaded`: includes loaded tab count, total tab count, row count, static/live source, and snapshot timestamp.
+- `car_selected`: includes selected car name and selected car count.
+- `test_toggled`: includes test name, enabled/disabled state, and enabled test count.
+- `comparison_generated`: includes selected car names, enabled test names, car count, test count, category count, and scored category count.
+
 ## Command-Line Usage
 
 List available columns:

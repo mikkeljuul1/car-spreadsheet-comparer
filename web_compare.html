@@ -647,6 +647,11 @@
       "arctic circle",
       "bangkok",
     ]);
+    const analyticsConfig = {
+      domain: "mikkeljuul1.github.io",
+      scriptUrl: "https://plausible.io/js/script.js",
+      enabledHosts: new Set(["mikkeljuul1.github.io"]),
+    };
     const state = {
       workbook: null,
       selectedCars: new Set(),
@@ -655,6 +660,7 @@
       allCarNames: new Set(),
       carAliases: new Map(),
       carEntries: new Map(),
+      lastComparisonSignature: "",
     };
 
     const sourceInput = document.querySelector("#sourceInput");
@@ -691,6 +697,27 @@
 
     function setStatus(text) {
       statusNode.textContent = text;
+    }
+
+    function analyticsEnabled() {
+      return analyticsConfig.enabledHosts.has(window.location.hostname);
+    }
+
+    function loadAnalytics() {
+      if (!analyticsEnabled()) return;
+      window.plausible = window.plausible || function plausibleEvent() {
+        (window.plausible.q = window.plausible.q || []).push(arguments);
+      };
+      const script = document.createElement("script");
+      script.defer = true;
+      script.dataset.domain = analyticsConfig.domain;
+      script.src = analyticsConfig.scriptUrl;
+      document.head.append(script);
+    }
+
+    function trackEvent(name, props = {}) {
+      if (!analyticsEnabled() || typeof window.plausible !== "function") return;
+      window.plausible(name, { props });
     }
 
     function loadedSheets() {
@@ -1073,6 +1100,13 @@
         const summary = state.workbook.summary;
         const snapshotText = result.staticSnapshot && state.workbook.generatedAt ? ` snapshot ${state.workbook.generatedAt.slice(0, 10)}` : "";
         setStatus(`${summary.loadedSheetCount}/${summary.sheetCount} tabs, ${summary.rowCount} rows${snapshotText}`);
+        trackEvent("workbook_loaded", {
+          loaded_tabs: summary.loadedSheetCount,
+          total_tabs: summary.sheetCount,
+          row_count: summary.rowCount,
+          static_snapshot: result.staticSnapshot ? "yes" : "no",
+          generated_at: state.workbook.generatedAt ?? "live",
+        });
       } catch (error) {
         messages.innerHTML = `<div class="panel error">${escapeHtml(error.message)}</div>`;
         setStatus("Load failed");
@@ -1110,6 +1144,11 @@
         label.querySelector("input").addEventListener("change", event => {
           if (event.target.checked) state.selectedGids.add(sheet.gid);
           else state.selectedGids.delete(sheet.gid);
+          trackEvent("test_toggled", {
+            test: sheet.title,
+            enabled: event.target.checked ? "yes" : "no",
+            enabled_test_count: state.selectedGids.size,
+          });
           pruneUnavailableSelectedCars();
           renderTests();
           renderCars();
@@ -1141,8 +1180,15 @@
       for (const button of carList.querySelectorAll("button[data-car]")) {
         button.addEventListener("click", () => {
           const car = button.dataset.car;
-          if (state.selectedCars.has(car)) state.selectedCars.delete(car);
-          else state.selectedCars.add(car);
+          if (state.selectedCars.has(car)) {
+            state.selectedCars.delete(car);
+          } else {
+            state.selectedCars.add(car);
+            trackEvent("car_selected", {
+              car,
+              selected_car_count: state.selectedCars.size,
+            });
+          }
           renderCars();
           renderSelectedCars();
           renderComparison();
@@ -1276,14 +1322,35 @@
       return "";
     }
 
+    function trackComparisonGenerated(cars, results) {
+      const scoredResults = results.filter(result => result.metricWinners.length);
+      const signature = JSON.stringify({
+        cars,
+        tests: enabledSheets().map(sheet => sheet.gid),
+        categories: results.map(result => result.sheet.gid),
+      });
+      if (signature === state.lastComparisonSignature) return;
+      state.lastComparisonSignature = signature;
+      trackEvent("comparison_generated", {
+        car_count: cars.length,
+        cars: cars.join(" | "),
+        enabled_test_count: state.selectedGids.size,
+        enabled_tests: enabledSheets().map(sheet => sheet.title).join(" | "),
+        category_count: results.length,
+        scored_category_count: scoredResults.length,
+      });
+    }
+
     function renderComparison() {
       const cars = [...state.selectedCars].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
       if (!state.workbook) {
+        state.lastComparisonSignature = "";
         winnerOverview.innerHTML = "";
         compareArea.innerHTML = `<div class="panel empty">Loading workbook</div>`;
         return;
       }
       if (!cars.length) {
+        state.lastComparisonSignature = "";
         winnerOverview.innerHTML = "";
         compareArea.innerHTML = `<div class="panel empty">No cars selected</div>`;
         return;
@@ -1294,6 +1361,7 @@
         .filter(result => result.rows.length || result.presentCount > 0);
 
       renderWinnerOverview(results, cars);
+    trackComparisonGenerated(cars, results);
 
       const sections = [];
       for (const result of results) {
@@ -1363,6 +1431,7 @@
     rawFilter.addEventListener("input", renderRawTable);
 
     sourceInput.value = defaultSource;
+    loadAnalytics();
     loadWorkbook(false);
   </script>
 </body>
