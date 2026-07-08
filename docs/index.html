@@ -264,10 +264,10 @@
     }
 
     .overview-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 0.75rem;
-      align-items: baseline;
+      display: grid;
+      grid-template-columns: minmax(14rem, 1fr) minmax(16rem, 1.2fr);
+      gap: 0.9rem;
+      align-items: stretch;
       padding: 0.85rem 0.95rem;
       border-bottom: 1px solid var(--line);
       background: linear-gradient(90deg, rgba(29, 111, 66, 0.14), rgba(15, 124, 122, 0.08));
@@ -282,6 +282,43 @@
     .overview-head span {
       color: var(--muted);
       font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    .overview-copy {
+      display: grid;
+      align-content: center;
+      gap: 0.25rem;
+    }
+
+    .grand-winner {
+      display: grid;
+      gap: 0.22rem;
+      align-content: center;
+      justify-items: start;
+      border: 1px solid rgba(29, 111, 66, 0.22);
+      border-radius: 8px;
+      background: rgba(255, 253, 248, 0.76);
+      padding: 0.72rem 0.82rem;
+    }
+
+    .grand-label {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .grand-name {
+      color: #124729;
+      font-size: 1.05rem;
+      font-weight: 900;
+      line-height: 1.22;
+    }
+
+    .grand-score {
+      color: var(--muted);
+      font-size: 0.8rem;
       font-weight: 800;
     }
 
@@ -306,11 +343,19 @@
     }
 
     .overall-winner {
-      display: block;
+      display: grid;
+      gap: 0.1rem;
       margin-bottom: 0.4rem;
       color: #124729;
       font-size: 1.02rem;
       font-weight: 900;
+    }
+
+    .card-label {
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 900;
+      text-transform: uppercase;
     }
 
     .winner-score {
@@ -321,7 +366,7 @@
 
     .metric-winner-list {
       display: grid;
-      gap: 0.28rem;
+      gap: 0;
       margin: 0.65rem 0 0;
       padding: 0;
       list-style: none;
@@ -331,13 +376,26 @@
 
     .metric-winner-list li {
       display: grid;
-      grid-template-columns: minmax(6rem, 0.85fr) minmax(8rem, 1fr);
-      gap: 0.5rem;
+      grid-template-columns: minmax(5.5rem, 0.7fr) auto minmax(9rem, 1fr);
+      gap: 0.45rem;
       align-items: baseline;
+      border-top: 1px solid rgba(216, 208, 193, 0.72);
+      padding: 0.38rem 0;
     }
 
     .metric-winner-list strong {
       color: var(--track);
+      line-height: 1.2;
+    }
+
+    .metric-winner-list span {
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    .metric-separator {
+      color: var(--muted);
+      font-weight: 900;
     }
 
     .sheet-section {
@@ -508,7 +566,7 @@
       }
 
       .overview-head {
-        display: grid;
+        grid-template-columns: 1fr;
       }
 
       aside {
@@ -1163,8 +1221,9 @@
       const grandWinners = bestOverallScore > 0
         ? [...overallScores.entries()].filter(([_car, score]) => score === bestOverallScore).map(([car]) => car)
         : [];
-      const grandWinnerText = grandWinners.length
-        ? `Overall winner: ${grandWinners.join(" / ")} (${formatScore(bestOverallScore)} of ${scoredResults.length} categories)`
+      const grandWinnerName = grandWinners.length ? grandWinners.join(" / ") : "No clear winner";
+      const grandWinnerScore = grandWinners.length
+        ? `${formatScore(bestOverallScore)} of ${scoredResults.length} categories won`
         : `${scoredResults.length} categories with scored winners`;
 
       const cards = scoredResults.map(result => {
@@ -1173,14 +1232,14 @@
           ? `${formatScore(result.bestScore)} of ${result.metricWinners.length} scored metrics`
           : `${result.metricWinners.length} scored metrics`;
         const metricItems = result.metricWinners.slice(0, 6).map(winner => `
-          <li><strong>${escapeHtml(winner.metric)}</strong><span>${escapeHtml(winner.names.join(" / "))}</span></li>
+          <li><strong>${escapeHtml(winner.metric)}</strong><span class="metric-separator">→</span><span>${escapeHtml(winner.names.join(" / "))}</span></li>
         `).join("");
         const moreCount = result.metricWinners.length - 6;
-        const moreItem = moreCount > 0 ? `<li><strong>More</strong><span>${moreCount} additional metric winners below</span></li>` : "";
+        const moreItem = moreCount > 0 ? `<li><strong>More</strong><span class="metric-separator">→</span><span>${moreCount} additional metric winners below</span></li>` : "";
         return `
           <article class="winner-card">
             <h3>${escapeHtml(result.sheet.title)}</h3>
-            <span class="overall-winner">${escapeHtml(overall)}</span>
+            <span class="overall-winner"><span class="card-label">Category winner</span><span>${escapeHtml(overall)}</span></span>
             <span class="winner-score">${escapeHtml(scoreText)}</span>
             <ul class="metric-winner-list">${metricItems}${moreItem}</ul>
           </article>
@@ -1190,8 +1249,15 @@
       winnerOverview.innerHTML = `
         <section class="panel winners-overview">
           <div class="overview-head">
-            <h2>Winner Overview</h2>
-            <span>${escapeHtml(grandWinnerText)}</span>
+            <div class="overview-copy">
+              <h2>Winner Overview</h2>
+              <span>Category winners and metric winners at a glance</span>
+            </div>
+            <div class="grand-winner">
+              <span class="grand-label">Overall winner</span>
+              <span class="grand-name">${escapeHtml(grandWinnerName)}</span>
+              <span class="grand-score">${escapeHtml(grandWinnerScore)}</span>
+            </div>
           </div>
           <div class="winner-grid">${cards}</div>
         </section>
