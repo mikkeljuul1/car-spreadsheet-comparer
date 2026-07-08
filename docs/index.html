@@ -648,8 +648,8 @@
       "bangkok",
     ]);
     const analyticsConfig = {
-      domain: "mikkeljuul1.github.io",
-      scriptUrl: "https://plausible.io/js/script.js",
+      code: "car-spreadsheet-comparer",
+      scriptUrl: "https://gc.zgo.at/count.js",
       enabledHosts: new Set(["mikkeljuul1.github.io"]),
     };
     const state = {
@@ -705,19 +705,25 @@
 
     function loadAnalytics() {
       if (!analyticsEnabled()) return;
-      window.plausible = window.plausible || function plausibleEvent() {
-        (window.plausible.q = window.plausible.q || []).push(arguments);
-      };
+      window.goatcounter = window.goatcounter || { no_onload: false };
       const script = document.createElement("script");
       script.defer = true;
-      script.dataset.domain = analyticsConfig.domain;
+      script.dataset.goatcounter = `https://${analyticsConfig.code}.goatcounter.com/count`;
       script.src = analyticsConfig.scriptUrl;
       document.head.append(script);
     }
 
     function trackEvent(name, props = {}) {
-      if (!analyticsEnabled() || typeof window.plausible !== "function") return;
-      window.plausible(name, { props });
+      if (!analyticsEnabled() || typeof window.goatcounter?.count !== "function") return;
+      const params = new URLSearchParams();
+      for (const [key, value] of Object.entries(props)) {
+        if (value !== undefined && value !== null && value !== "") params.set(key, String(value));
+      }
+      window.goatcounter.count({
+        path: `/event/${name}${params.toString() ? `?${params}` : ""}`,
+        title: name.replace(/_/g, " "),
+        event: true,
+      });
     }
 
     function loadedSheets() {

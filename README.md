@@ -74,9 +74,9 @@ The included GitHub Actions workflow refreshes `docs/workbook.json` daily and ca
 
 ## Analytics
 
-The static website includes Plausible analytics support. Analytics is disabled on localhost and enabled on the GitHub Pages host `mikkeljuul1.github.io`.
+The static website includes GoatCounter analytics support. Analytics is disabled on localhost and enabled on the GitHub Pages host `mikkeljuul1.github.io`.
 
-To activate it, create a Plausible site for `mikkeljuul1.github.io`. Plausible will then track normal site analytics such as visits, page views, referrers, countries, devices, browsers, and visit duration.
+To activate it, create a free GoatCounter site with the code `car-spreadsheet-comparer`. GoatCounter will then track normal site analytics such as visits, page views, referrers, countries, devices, browsers, and visit duration.
 
 The app also sends these custom events:
 
