@@ -1,10 +1,10 @@
 # Car Spreadsheet Comparer
 
-A small Python command-line tool for fetching a Google Sheets car spreadsheet and comparing rows with filters, sorting, selected columns, and CSV or Markdown output.
+A small Python tool for fetching a multi-tab Google Sheets car spreadsheet and comparing cars in a local website or from the command line.
 
 The default source is:
 
-https://docs.google.com/spreadsheets/d/1V6ucyFGKWuSQzvI8lMzvvWJHrBS82echMVJH37kwgjE/edit?gid=2069101638#gid=2069101638
+https://docs.google.com/spreadsheets/d/1V6ucyFGKWuSQzvI8lMzvvWJHrBS82echMVJH37kwgjE
 
 ## Requirements
 
@@ -12,7 +12,65 @@ https://docs.google.com/spreadsheets/d/1V6ucyFGKWuSQzvI8lMzvvWJHrBS82echMVJH37kw
 - No third-party Python packages
 - The spreadsheet must be shared so it can be exported as CSV
 
-## Usage
+## Website Usage
+
+Open the local website:
+
+```bash
+python3 car_compare.py
+```
+
+Or open it explicitly without launching a browser:
+
+```bash
+python3 car_compare.py --web --no-browser
+```
+
+The website discovers the visible tabs in the Google Sheet, loads each tab, and lets you compare selected cars across all selected tests. The default workbook currently includes tabs such as Weight, Acceleration, Noise, Braking, Range, 1000 km, Geilo, Degradation, Zero mile, 500 km, Arctic Circle, and Bangkok.
+
+Use a different spreadsheet source:
+
+```bash
+python3 car_compare.py --web --source "https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/edit?gid=123#gid=123"
+```
+
+Legacy desktop GUI:
+
+```bash
+python3 car_compare.py --gui
+```
+
+The website lets you:
+
+- Search and choose cars once.
+- Turn spreadsheet tabs on or off as test groups.
+- Compare metrics with cars as columns and tests as sections.
+- See winner summaries, detailed comparison tables, and raw spreadsheet rows.
+
+## GitHub Pages
+
+Build the static site for GitHub Pages:
+
+```bash
+python3 car_compare.py --build-static docs
+```
+
+This creates:
+
+- `docs/index.html`: the static website.
+- `docs/workbook.json`: a snapshot of all spreadsheet tabs.
+
+To publish it for free:
+
+1. Push this repository to GitHub.
+2. Open the repository settings on GitHub.
+3. Go to Pages.
+4. Set the source to deploy from the `main` branch and the `/docs` folder.
+5. Save and wait for GitHub Pages to publish the site.
+
+The included GitHub Actions workflow refreshes `docs/workbook.json` daily and can also be run manually from the Actions tab.
+
+## Command-Line Usage
 
 List available columns:
 
@@ -53,6 +111,13 @@ python3 car_compare.py --filter Surface=Dry --output csv > filtered-cars.csv
 ## Options
 
 - `--source`: Google Sheets URL, CSV export URL, or local CSV path.
+- `--web`: Open the local website comparer.
+- `--gui`: Open the legacy desktop GUI.
+- `--host`: Host for the website. Default: `127.0.0.1`.
+- `--port`: Starting port for the website. Default: `8765`.
+- `--no-browser`: Start the website without opening a browser.
+- `--export-workbook PATH`: Export all spreadsheet tabs to a static workbook JSON file.
+- `--build-static DIR`: Build a static GitHub Pages site into `DIR`.
 - `--filter COLUMN=TEXT`: Keep rows where `COLUMN` contains `TEXT`. Repeatable.
 - `--min COLUMN=NUMBER`: Keep rows where numeric `COLUMN` is at least `NUMBER`. Repeatable.
 - `--max COLUMN=NUMBER`: Keep rows where numeric `COLUMN` is at most `NUMBER`. Repeatable.

@@ -1,0 +1,1253 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Car Comparer</title>
+  <style>
+    :root {
+      --paper: #f7f3ea;
+      --panel: #fffaf0;
+      --ink: #172126;
+      --muted: #637076;
+      --line: #d8d0c1;
+      --track: #203b46;
+      --track-2: #315866;
+      --accent: #c84d2f;
+      --accent-2: #0f7c7a;
+      --good: #1d6f42;
+      --shadow: 0 18px 42px rgba(29, 39, 43, 0.14);
+      color-scheme: light;
+      font-family: "Avenir Next", "Gill Sans", "Trebuchet MS", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(135deg, rgba(32, 59, 70, 0.10), transparent 34%),
+        radial-gradient(circle at top right, rgba(200, 77, 47, 0.14), transparent 34rem),
+        var(--paper);
+      color: var(--ink);
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      border-radius: 7px;
+      padding: 0.55rem 0.75rem;
+      cursor: pointer;
+    }
+
+    button:hover { border-color: var(--track-2); }
+    button.primary { background: var(--track); border-color: var(--track); color: white; }
+    button.danger { border-color: rgba(200, 77, 47, 0.35); color: #8f2f1c; }
+    button.active { background: var(--track-2); border-color: var(--track-2); color: white; }
+
+    input, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #fffdf8;
+      color: var(--ink);
+      border-radius: 7px;
+      padding: 0.58rem 0.7rem;
+      outline: none;
+    }
+
+    input:focus, select:focus { border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(15, 124, 122, 0.12); }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    header {
+      padding: 1rem 1.25rem 0.8rem;
+      background: rgba(247, 243, 234, 0.92);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(13rem, 0.8fr) minmax(16rem, 1.8fr) auto auto;
+      gap: 0.75rem;
+      align-items: end;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.55rem;
+      line-height: 1.05;
+      color: var(--track);
+    }
+
+    label {
+      display: grid;
+      gap: 0.28rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .status {
+      min-width: 15rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+      align-self: center;
+      text-align: right;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 21rem minmax(0, 1fr);
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    aside, main {
+      min-width: 0;
+    }
+
+    .panel {
+      background: rgba(255, 250, 240, 0.94);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    aside {
+      display: grid;
+      gap: 0.85rem;
+      align-content: start;
+      position: sticky;
+      top: 5.8rem;
+      max-height: calc(100vh - 6.7rem);
+      overflow: auto;
+    }
+
+    .block {
+      padding: 0.85rem;
+    }
+
+    .block h2, .compare-head h2, .raw-head h2 {
+      margin: 0 0 0.65rem;
+      font-size: 0.95rem;
+      color: var(--track);
+    }
+
+    .tests {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+
+    .test-chip {
+      display: inline-grid;
+      grid-template-columns: auto auto;
+      gap: 0.35rem;
+      align-items: center;
+      border: 1px solid var(--line);
+      background: #fffdf8;
+      border-radius: 999px;
+      padding: 0.38rem 0.58rem;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+
+    .test-chip input { width: auto; }
+
+    .test-chip.selected {
+      border-color: rgba(15, 124, 122, 0.55);
+      background: rgba(15, 124, 122, 0.10);
+    }
+
+    .car-list {
+      display: grid;
+      gap: 0.35rem;
+      max-height: 28rem;
+      overflow: auto;
+      margin-top: 0.65rem;
+      padding-right: 0.2rem;
+    }
+
+    .car-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.5rem;
+      align-items: center;
+      text-align: left;
+      background: #fffdf8;
+    }
+
+    .car-row span:first-child {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .count {
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+
+    .selected-cars {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.65rem;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      border-radius: 999px;
+      background: var(--track);
+      color: white;
+      padding: 0.42rem 0.58rem;
+      max-width: 100%;
+    }
+
+    .chip button {
+      border: 0;
+      background: transparent;
+      color: white;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .main-stack {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .compare-area {
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .winners-overview {
+      overflow: hidden;
+    }
+
+    .overview-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      align-items: baseline;
+      padding: 0.85rem 0.95rem;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(90deg, rgba(29, 111, 66, 0.14), rgba(15, 124, 122, 0.08));
+    }
+
+    .overview-head h2 {
+      margin: 0;
+      color: var(--track);
+      font-size: 1.08rem;
+    }
+
+    .overview-head span {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    .winner-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+      gap: 0.75rem;
+      padding: 0.85rem;
+    }
+
+    .winner-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf8;
+      padding: 0.75rem;
+    }
+
+    .winner-card h3 {
+      margin: 0 0 0.45rem;
+      color: var(--track);
+      font-size: 0.98rem;
+    }
+
+    .overall-winner {
+      display: block;
+      margin-bottom: 0.4rem;
+      color: #124729;
+      font-size: 1.02rem;
+      font-weight: 900;
+    }
+
+    .winner-score {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .metric-winner-list {
+      display: grid;
+      gap: 0.28rem;
+      margin: 0.65rem 0 0;
+      padding: 0;
+      list-style: none;
+      color: var(--ink);
+      font-size: 0.82rem;
+    }
+
+    .metric-winner-list li {
+      display: grid;
+      grid-template-columns: minmax(6rem, 0.85fr) minmax(8rem, 1fr);
+      gap: 0.5rem;
+      align-items: baseline;
+    }
+
+    .metric-winner-list strong {
+      color: var(--track);
+    }
+
+    .sheet-section {
+      overflow: hidden;
+    }
+
+    .sheet-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      align-items: baseline;
+      padding: 0.8rem 0.9rem;
+      background: linear-gradient(90deg, rgba(32, 59, 70, 0.10), rgba(200, 77, 47, 0.08));
+      border-bottom: 1px solid var(--line);
+    }
+
+    .sheet-title h3 {
+      margin: 0;
+      color: var(--track);
+      font-size: 1rem;
+    }
+
+    .sheet-title span {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      max-height: 32rem;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 42rem;
+      background: #fffdf8;
+    }
+
+    th, td {
+      border-bottom: 1px solid rgba(216, 208, 193, 0.82);
+      padding: 0.52rem 0.65rem;
+      vertical-align: top;
+      text-align: left;
+      overflow-wrap: anywhere;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: #e8dfcf;
+      color: var(--track);
+      font-size: 0.82rem;
+    }
+
+    td.metric {
+      color: var(--track);
+      font-weight: 800;
+      width: 12rem;
+    }
+
+    td.missing {
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .cell-lines {
+      display: grid;
+      gap: 0.22rem;
+    }
+
+    .cell-line {
+      display: grid;
+      gap: 0.08rem;
+    }
+
+    .cell-context {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .sheet-note {
+      display: block;
+      margin-top: 0.22rem;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+
+    td.winner {
+      background: rgba(29, 111, 66, 0.13);
+      color: #124729;
+      font-weight: 800;
+      box-shadow: inset 4px 0 0 var(--good);
+    }
+
+    td.winner-summary {
+      background: rgba(15, 124, 122, 0.10);
+      color: var(--track);
+      font-weight: 800;
+      min-width: 11rem;
+    }
+
+    .winner-tag {
+      display: inline-block;
+      margin-left: 0.45rem;
+      border-radius: 999px;
+      background: var(--good);
+      color: white;
+      padding: 0.12rem 0.42rem;
+      font-size: 0.72rem;
+      line-height: 1.35;
+    }
+
+    .metric-note {
+      display: block;
+      margin-top: 0.18rem;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .raw-panel {
+      overflow: hidden;
+    }
+
+    .raw-head {
+      display: grid;
+      grid-template-columns: 1fr minmax(12rem, 18rem) minmax(12rem, 18rem);
+      gap: 0.75rem;
+      align-items: end;
+      padding: 0.85rem;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(90deg, rgba(32, 59, 70, 0.14), rgba(15, 124, 122, 0.08));
+    }
+
+    .raw-title h2 {
+      margin: 0;
+      font-size: 1.08rem;
+    }
+
+    .raw-title p {
+      margin: 0.25rem 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .empty {
+      padding: 2rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .error {
+      border-left: 4px solid var(--accent);
+      padding: 0.75rem 0.9rem;
+      color: #852d1c;
+      background: rgba(200, 77, 47, 0.10);
+    }
+
+    @media (max-width: 920px) {
+      .topbar, .layout, .raw-head {
+        grid-template-columns: 1fr;
+      }
+
+      .overview-head {
+        display: grid;
+      }
+
+      aside {
+        position: static;
+        max-height: none;
+      }
+
+      .status {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="topbar">
+        <h1>Car Comparer</h1>
+        <label>Spreadsheet URL
+          <input id="sourceInput" autocomplete="off">
+        </label>
+        <button id="loadButton" class="primary">Load workbook</button>
+        <div id="status" class="status">Idle</div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside>
+        <section class="panel block">
+          <h2>Tests</h2>
+          <div class="tests" id="tests"></div>
+        </section>
+
+        <section class="panel block">
+          <h2>Cars</h2>
+          <input id="carSearch" placeholder="Search cars" autocomplete="off">
+          <div class="selected-cars" id="selectedCars"></div>
+          <div class="car-list" id="carList"></div>
+        </section>
+      </aside>
+
+      <main class="main-stack">
+        <section id="messages"></section>
+        <section id="winnerOverview"></section>
+        <section class="compare-area" id="compareArea"></section>
+
+        <section class="panel raw-panel">
+          <div class="raw-head">
+            <div class="raw-title">
+              <h2>Full Spreadsheet</h2>
+              <p>Raw rows from the selected tab</p>
+            </div>
+            <label>Tab
+              <select id="rawSheet"></select>
+            </label>
+            <label>Row filter
+              <input id="rawFilter" placeholder="Filter rows" autocomplete="off">
+            </label>
+          </div>
+          <div class="table-wrap" id="rawTable"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const defaultSource = "https://docs.google.com/spreadsheets/d/1V6ucyFGKWuSQzvI8lMzvvWJHrBS82echMVJH37kwgjE";
+    const defaultDisabledSheets = new Set([
+      "zeva",
+      "geilo",
+      "degradation",
+      "zero mile",
+      "500 km",
+      "arctic circle",
+      "bangkok",
+    ]);
+    const state = {
+      workbook: null,
+      selectedCars: new Set(),
+      selectedGids: new Set(),
+      activeGid: null,
+      allCarNames: new Set(),
+      carAliases: new Map(),
+      carEntries: new Map(),
+    };
+
+    const sourceInput = document.querySelector("#sourceInput");
+    const loadButton = document.querySelector("#loadButton");
+    const statusNode = document.querySelector("#status");
+    const testsNode = document.querySelector("#tests");
+    const carSearch = document.querySelector("#carSearch");
+    const selectedCarsNode = document.querySelector("#selectedCars");
+    const carList = document.querySelector("#carList");
+    const messages = document.querySelector("#messages");
+    const winnerOverview = document.querySelector("#winnerOverview");
+    const compareArea = document.querySelector("#compareArea");
+    const rawSheet = document.querySelector("#rawSheet");
+    const rawFilter = document.querySelector("#rawFilter");
+    const rawTable = document.querySelector("#rawTable");
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#39;",
+      }[character]));
+    }
+
+    function csvCell(value) {
+      const text = String(value ?? "");
+      if (/[",\n]/.test(text)) {
+        return `"${text.replaceAll('"', '""')}"`;
+      }
+      return text;
+    }
+
+    function setStatus(text) {
+      statusNode.textContent = text;
+    }
+
+    function loadedSheets() {
+      return state.workbook ? state.workbook.sheets.filter(sheet => !sheet.error) : [];
+    }
+
+    function enabledSheets() {
+      return loadedSheets().filter(sheet => state.selectedGids.has(sheet.gid));
+    }
+
+    function allCarNames() {
+      return state.allCarNames;
+    }
+
+    function normalizedCarName(name) {
+      return String(name ?? "").replace(/\s+/g, " ").trim();
+    }
+
+    function carTokenSignature(name) {
+      const tokens = normalizedCarName(name)
+        .toLowerCase()
+        .replace(/e-tron/g, "etron")
+        .replace(/\*/g, "")
+        .replace(/[^a-z0-9+]+/g, " ")
+        .split(/\s+/)
+        .filter(Boolean);
+      if (!tokens.length) return "";
+      return [tokens[0], ...tokens.slice(1).sort()].join(" ");
+    }
+
+    function carNameSheetCount(name, sheetCounts) {
+      return sheetCounts.get(name) ?? 0;
+    }
+
+    function preferredCarName(names, sheetCounts) {
+      return [...names].sort((first, second) => {
+        const sheetDelta = carNameSheetCount(second, sheetCounts) - carNameSheetCount(first, sheetCounts);
+        if (sheetDelta) return sheetDelta;
+        const lengthDelta = second.length - first.length;
+        if (lengthDelta) return lengthDelta;
+        return first.localeCompare(second, undefined, { sensitivity: "base" });
+      })[0];
+    }
+
+    function namesAppearTogether(firstName, secondName, namesBySheet) {
+      return [...namesBySheet.values()].some(names => names.has(firstName) && names.has(secondName));
+    }
+
+    function buildCarAliasMap(names, namesBySheet, sheetCounts) {
+      const aliases = new Map();
+
+      const signatureGroups = new Map();
+      for (const name of names) {
+        const signature = carTokenSignature(name);
+        if (!signatureGroups.has(signature)) signatureGroups.set(signature, []);
+        signatureGroups.get(signature).push(name);
+      }
+      for (const group of signatureGroups.values()) {
+        if (group.length < 2) continue;
+        const overlaps = group.some((name, index) => group.slice(index + 1).some(otherName => namesAppearTogether(name, otherName, namesBySheet)));
+        if (overlaps) continue;
+        const preferredName = preferredCarName(group, sheetCounts);
+        for (const name of group) {
+          aliases.set(name, preferredName);
+        }
+      }
+
+      for (const baseName of names) {
+        if (aliases.has(baseName)) continue;
+        const variants = names.filter(candidate => candidate !== baseName && candidate.startsWith(`${baseName} `));
+        const unaliasedVariants = variants.filter(variant => !aliases.has(variant));
+        if (unaliasedVariants.length === 1 && !namesAppearTogether(baseName, unaliasedVariants[0], namesBySheet)) {
+          aliases.set(baseName, unaliasedVariants[0]);
+        }
+      }
+      return aliases;
+    }
+
+    function canonicalCarName(name, aliases = state.carAliases) {
+      const cleaned = normalizedCarName(name);
+      return aliases.get(cleaned) ?? cleaned;
+    }
+
+    function deriveWorkbookData() {
+      const sheets = loadedSheets();
+      const names = new Set();
+      const namesBySheet = new Map();
+      const sheetCounts = new Map();
+
+      for (const sheet of sheets) {
+        const sheetNames = new Set();
+        for (const row of sheet.rows) {
+          const name = normalizedCarName(row.Car);
+          if (!name) continue;
+          names.add(name);
+          sheetNames.add(name);
+        }
+        namesBySheet.set(sheet.gid, sheetNames);
+        for (const name of sheetNames) {
+          sheetCounts.set(name, (sheetCounts.get(name) ?? 0) + 1);
+        }
+      }
+
+      state.allCarNames = names;
+      state.carAliases = buildCarAliasMap([...names], namesBySheet, sheetCounts);
+      state.carEntries = new Map();
+
+      for (const sheet of sheets) {
+        sheet.canonicalRowsByCar = new Map();
+        for (const row of sheet.rows) {
+          const rawName = normalizedCarName(row.Car);
+          if (!rawName) continue;
+          const car = canonicalCarName(rawName);
+          if (!sheet.canonicalRowsByCar.has(car)) sheet.canonicalRowsByCar.set(car, []);
+          sheet.canonicalRowsByCar.get(car).push(row);
+
+          if (!state.carEntries.has(car)) state.carEntries.set(car, { name: car, aliases: new Set(), sheets: new Set(), rows: 0 });
+          const entry = state.carEntries.get(car);
+          entry.aliases.add(rawName);
+          entry.sheets.add(sheet.gid);
+          entry.rows += 1;
+        }
+      }
+    }
+
+    function carIndex() {
+      return [...state.carEntries.values()]
+        .map(car => ({ ...car, selectedSheets: new Set([...car.sheets].filter(gid => state.selectedGids.has(gid))) }))
+        .filter(car => car.selectedSheets.size > 0)
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+    }
+
+    function pruneUnavailableSelectedCars() {
+      const visibleCars = new Set(carIndex().map(car => car.name));
+      for (const car of state.selectedCars) {
+        if (!visibleCars.has(car)) state.selectedCars.delete(car);
+      }
+    }
+
+    function rowsForCar(sheet, car) {
+      return sheet.canonicalRowsByCar?.get(car) ?? [];
+    }
+
+    function cellValuesForCar(sheet, car, metric) {
+      return rowsForCar(sheet, car)
+        .map(row => row[metric])
+        .filter(value => value !== undefined && value !== null && String(value).trim() !== "");
+    }
+
+    function cellForCar(sheet, car, metric) {
+      const values = cellValuesForCar(sheet, car, metric);
+      return [...new Set(values.map(String))].join(" / ");
+    }
+
+    function shouldShowRowContext(sheet, metric) {
+      return Boolean(winnerRule(sheet.title, metric));
+    }
+
+    function rowContext(sheet, row) {
+      const sheetKey = normalizedKey(sheet.title);
+      if (sheetKey === "range") {
+        const parts = [];
+        if (row.Speed) parts.push(`${row.Speed} km/h`);
+        if (row.Surface) parts.push(row.Surface);
+        if (row.Temp) parts.push(`${row.Temp}°C`);
+        if (row.Tires) parts.push(row.Tires);
+        return parts.join(" · ");
+      }
+      if (["noise", "braking"].includes(sheetKey)) {
+        const parts = [];
+        if (row.Surface) parts.push(row.Surface);
+        if (row.Season) parts.push(row.Season);
+        if (row.Temp) parts.push(`${row.Temp}°C`);
+        if (row.Tires) parts.push(row.Tires);
+        return parts.join(" · ");
+      }
+      if (["1000 km", "500 km", "arctic circle", "bangkok", "geilo"].includes(sheetKey)) {
+        const parts = [];
+        if (row.Date) parts.push(row.Date);
+        if (row.Temp) parts.push(`${row.Temp}°C`);
+        if (row.Stops) parts.push(`${row.Stops} stops`);
+        return parts.join(" · ");
+      }
+      return "";
+    }
+
+    function cellDisplayForCar(sheet, car, metric) {
+      if (!shouldShowRowContext(sheet, metric)) {
+        return { html: escapeHtml(cellForCar(sheet, car, metric)), multiline: false };
+      }
+
+      const rows = rowsForCar(sheet, car)
+        .map(row => ({ value: row[metric], context: rowContext(sheet, row) }))
+        .filter(item => item.value !== undefined && item.value !== null && String(item.value).trim() !== "");
+      if (!rows.length) return { html: "", multiline: false };
+
+      const uniqueRows = [];
+      const seen = new Set();
+      for (const row of rows) {
+        const key = `${row.context}\u0000${row.value}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        uniqueRows.push(row);
+      }
+
+      if (uniqueRows.length === 1 || !uniqueRows.some(row => row.context)) {
+        return { html: escapeHtml([...new Set(rows.map(row => String(row.value)))].join(" / ")), multiline: uniqueRows.length > 1 };
+      }
+
+      const htmlRows = uniqueRows.map(row => `
+        <span class="cell-line">
+          <span class="cell-context">${escapeHtml(row.context)}</span>
+          <span>${escapeHtml(row.value)}</span>
+        </span>
+      `).join("");
+      return { html: `<span class="cell-lines">${htmlRows}</span>`, multiline: true };
+    }
+
+    function parseComparableNumber(value) {
+      const firstValue = String(value ?? "").split("/")[0].trim();
+      const match = firstValue.replace(/\s+/g, "").replace(",", ".").match(/-?\d+(?:\.\d+)?/);
+      return match ? Number(match[0]) : null;
+    }
+
+    function normalizedKey(value) {
+      return String(value ?? "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    }
+
+    function winnerRule(sheetTitle, metric) {
+      const sheet = normalizedKey(sheetTitle);
+      const column = normalizedKey(metric);
+      const exactRules = {
+        banana: {
+          trunk: { direction: "high", label: "Most trunk space" },
+          "seats folded": { direction: "high", label: "Most cargo space" },
+        },
+        weight: {
+          distribution: { direction: "center", label: "Closest to 50/50" },
+        },
+        acceleration: {
+          "0 10": { direction: "low", label: "Quickest" },
+          "0 20": { direction: "low", label: "Quickest" },
+          "0 30": { direction: "low", label: "Quickest" },
+          "0 40": { direction: "low", label: "Quickest" },
+          "0 50": { direction: "low", label: "Quickest" },
+          "0 60": { direction: "low", label: "Quickest" },
+          "0 70": { direction: "low", label: "Quickest" },
+          "0 80": { direction: "low", label: "Quickest" },
+          "0 90": { direction: "low", label: "Quickest" },
+          "0 100": { direction: "low", label: "Quickest" },
+          "0 100 1 ft": { direction: "low", label: "Quickest" },
+        },
+        noise: {
+          "80 km h": { direction: "low", label: "Quietest" },
+          "100 km h": { direction: "low", label: "Quietest" },
+          "120 km h": { direction: "low", label: "Quietest" },
+          average: { direction: "low", label: "Quietest average" },
+        },
+        braking: {
+          distance: { direction: "low", label: "Shortest stop" },
+          "100 0 km h": { direction: "low", label: "Shortest stop" },
+        },
+        range: {
+          "wh km": { direction: "low", label: "Most efficient" },
+          km: { direction: "high", label: "Longest range" },
+          mi: { direction: "high", label: "Longest range" },
+          "75 range": { direction: "high", label: "Longest 75% range" },
+          "75 charging time": { direction: "low", label: "Fastest charge" },
+          "75 km h": { direction: "high", label: "Fastest charge speed" },
+        },
+        sunday: {
+          "wh km": { direction: "low", label: "Most efficient" },
+          range: { direction: "high", label: "Longest range" },
+          diff: { direction: "high", label: "Best WLTP result" },
+        },
+        "1000 km": {
+          time: { direction: "low", label: "Fastest" },
+          "km h": { direction: "high", label: "Highest average speed" },
+          "wh km": { direction: "low", label: "Most efficient" },
+        },
+        geilo: {
+          time: { direction: "low", label: "Fastest" },
+          stops: { direction: "low", label: "Fewest stops" },
+        },
+        degradation: {
+          degradation: { direction: "low", label: "Least degradation" },
+          "degr cycles": { direction: "low", label: "Least degradation per cycle" },
+        },
+        "zero mile": {
+          "zero buffer": { direction: "high", label: "Largest zero buffer" },
+          "zero range": { direction: "high", label: "Longest zero range" },
+        },
+        "500 km": {
+          time: { direction: "low", label: "Fastest" },
+          "km h": { direction: "high", label: "Highest average speed" },
+          "wh km": { direction: "low", label: "Most efficient" },
+          stops: { direction: "low", label: "Fewest stops" },
+        },
+        "arctic circle": {
+          time: { direction: "low", label: "Fastest" },
+          "km h": { direction: "high", label: "Highest average speed" },
+          "wh km": { direction: "low", label: "Most efficient" },
+          "price k": { direction: "low", label: "Lowest price" },
+        },
+        bangkok: {
+          time: { direction: "low", label: "Fastest" },
+          "wh km": { direction: "low", label: "Most efficient" },
+        },
+      };
+      return exactRules[sheet]?.[column] ?? null;
+    }
+
+    function distributionScore(value) {
+      const numbers = String(value ?? "").replace(/,/g, ".").match(/\d+(?:\.\d+)?/g)?.map(Number) ?? [];
+      if (numbers.length < 2) return null;
+      const total = numbers[0] + numbers[1];
+      if (!total) return null;
+      const frontPercent = numbers[0] / total * 100;
+      return Math.abs(frontPercent - 50);
+    }
+
+    function comparableScore(value, rule) {
+      if (rule.direction === "center") return distributionScore(value);
+      return parseComparableNumber(value);
+    }
+
+    function winnerNote(rule) {
+      if (rule.direction === "high") return rule.label ?? "Highest wins";
+      if (rule.direction === "low") return rule.label ?? "Lowest wins";
+      if (rule.direction === "center") return rule.label ?? "Closest to target wins";
+      return null;
+    }
+
+    function winnerInfo(sheet, metric, cars, values) {
+      const rule = winnerRule(sheet.title, metric);
+      if (!rule) return null;
+      const numericValues = values.map(value => comparableScore(value, rule));
+      const comparable = numericValues.filter(value => Number.isFinite(value));
+      if (comparable.length < 2) return null;
+      const target = rule.direction === "high" ? Math.max(...comparable) : Math.min(...comparable);
+      const winnerIndexes = numericValues
+        .map((value, index) => Number.isFinite(value) && value === target ? index : -1)
+        .filter(index => index >= 0);
+      if (!winnerIndexes.length || winnerIndexes.length === comparable.length) return null;
+      return {
+        note: winnerNote(rule),
+        indexes: new Set(winnerIndexes),
+        names: winnerIndexes.map(index => cars[index]),
+      };
+    }
+
+    async function fetchWorkbook(source, refresh) {
+      const apiUrl = `/api/workbook?source=${encodeURIComponent(source)}&refresh=${refresh ? "1" : "0"}`;
+      try {
+        const response = await fetch(apiUrl);
+        if (response.ok) return { workbook: await response.json(), staticSnapshot: false };
+      } catch (_error) {
+      }
+
+      const staticResponse = await fetch("workbook.json", { cache: refresh ? "reload" : "default" });
+      if (!staticResponse.ok) throw new Error(`Could not load workbook.json (${staticResponse.status})`);
+      return { workbook: await staticResponse.json(), staticSnapshot: true };
+    }
+
+    async function loadWorkbook(refresh = false) {
+      const source = sourceInput.value.trim() || defaultSource;
+      loadButton.disabled = true;
+      setStatus("Loading workbook...");
+      messages.innerHTML = "";
+      try {
+        const result = await fetchWorkbook(source, refresh);
+        state.workbook = result.workbook;
+        deriveWorkbookData();
+        state.selectedGids = new Set(loadedSheets()
+          .filter(sheet => !defaultDisabledSheets.has(sheet.title.toLowerCase()))
+          .map(sheet => sheet.gid));
+        state.activeGid = loadedSheets()[0]?.gid ?? null;
+        state.selectedCars.clear();
+        renderAll();
+        const summary = state.workbook.summary;
+        const snapshotText = result.staticSnapshot && state.workbook.generatedAt ? ` snapshot ${state.workbook.generatedAt.slice(0, 10)}` : "";
+        setStatus(`${summary.loadedSheetCount}/${summary.sheetCount} tabs, ${summary.rowCount} rows${snapshotText}`);
+      } catch (error) {
+        messages.innerHTML = `<div class="panel error">${escapeHtml(error.message)}</div>`;
+        setStatus("Load failed");
+      } finally {
+        loadButton.disabled = false;
+      }
+    }
+
+    function renderAll() {
+      renderMessages();
+      renderTests();
+      renderCars();
+      renderSelectedCars();
+      renderRawSheetOptions();
+      renderComparison();
+      renderRawTable();
+    }
+
+    function renderMessages() {
+      if (!state.workbook) {
+        messages.innerHTML = "";
+        return;
+      }
+      const failed = state.workbook.sheets.filter(sheet => sheet.error);
+      messages.innerHTML = failed.map(sheet => `<div class="panel error">${escapeHtml(sheet.title)}: ${escapeHtml(sheet.error)}</div>`).join("");
+    }
+
+    function renderTests() {
+      testsNode.innerHTML = "";
+      for (const sheet of loadedSheets()) {
+        const id = `test-${sheet.gid}`;
+        const label = document.createElement("label");
+        label.className = `test-chip ${state.selectedGids.has(sheet.gid) ? "selected" : ""}`;
+        label.innerHTML = `<input id="${id}" type="checkbox" ${state.selectedGids.has(sheet.gid) ? "checked" : ""}> <span>${escapeHtml(sheet.title)}</span>`;
+        label.querySelector("input").addEventListener("change", event => {
+          if (event.target.checked) state.selectedGids.add(sheet.gid);
+          else state.selectedGids.delete(sheet.gid);
+          pruneUnavailableSelectedCars();
+          renderTests();
+          renderCars();
+          renderSelectedCars();
+          renderComparison();
+        });
+        testsNode.append(label);
+      }
+    }
+
+    function renderCars() {
+      const query = carSearch.value.trim().toLowerCase();
+      const cars = carIndex().filter(car => !query || car.name.toLowerCase().includes(query)).slice(0, 250);
+      carList.innerHTML = cars.map(car => {
+        const active = state.selectedCars.has(car.name) ? " active" : "";
+        return `<button class="car-row${active}" data-car="${escapeHtml(car.name)}"><span>${escapeHtml(car.name)}</span><span class="count">${car.sheets.size} tabs</span></button>`;
+      }).join("") || `<div class="empty">No matching cars</div>`;
+      for (const button of carList.querySelectorAll("button[data-car]")) {
+        button.addEventListener("click", () => {
+          const car = button.dataset.car;
+          if (state.selectedCars.has(car)) state.selectedCars.delete(car);
+          else state.selectedCars.add(car);
+          renderCars();
+          renderSelectedCars();
+          renderComparison();
+        });
+      }
+    }
+
+    function renderSelectedCars() {
+      const cars = [...state.selectedCars].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+      selectedCarsNode.innerHTML = cars.map(car => `<span class="chip">${escapeHtml(car)} <button data-remove="${escapeHtml(car)}" title="Remove">x</button></span>`).join("");
+      for (const button of selectedCarsNode.querySelectorAll("button[data-remove]")) {
+        button.addEventListener("click", () => {
+          state.selectedCars.delete(button.dataset.remove);
+          renderCars();
+          renderSelectedCars();
+          renderComparison();
+        });
+      }
+    }
+
+    function comparisonRowsForSheet(sheet, cars) {
+      const rows = [];
+      for (const metric of sheet.headers.filter(header => header && header !== "Car")) {
+        const values = cars.map(car => cellForCar(sheet, car, metric));
+        const displays = cars.map(car => cellDisplayForCar(sheet, car, metric));
+        rows.push({ metric, values, displays });
+      }
+      return rows;
+    }
+
+    function categoryResult(sheet, cars) {
+      const rows = comparisonRowsForSheet(sheet, cars).map(row => ({
+        ...row,
+        winner: winnerInfo(sheet, row.metric, cars, row.values),
+      }));
+      const presentCount = cars.filter(car => rowsForCar(sheet, car).length).length;
+      const scores = new Map(cars.map(car => [car, 0]));
+      const metricWinners = [];
+
+      for (const row of rows) {
+        if (!row.winner) continue;
+        const points = 1 / row.winner.names.length;
+        for (const name of row.winner.names) {
+          scores.set(name, (scores.get(name) ?? 0) + points);
+        }
+        metricWinners.push({ metric: row.metric, names: row.winner.names, note: row.winner.note });
+      }
+
+      const bestScore = Math.max(0, ...scores.values());
+      const overallWinners = bestScore > 0
+        ? [...scores.entries()].filter(([_car, score]) => score === bestScore).map(([car]) => car)
+        : [];
+
+      return { sheet, rows, presentCount, scores, metricWinners, bestScore, overallWinners };
+    }
+
+    function formatScore(value) {
+      return Number.isInteger(value) ? String(value) : value.toFixed(1);
+    }
+
+    function renderWinnerOverview(results, cars) {
+      const scoredResults = results.filter(result => result.metricWinners.length);
+      if (!cars.length || !scoredResults.length) {
+        winnerOverview.innerHTML = "";
+        return;
+      }
+
+      const cards = scoredResults.map(result => {
+        const overall = result.overallWinners.length ? result.overallWinners.join(" / ") : "No clear winner";
+        const scoreText = result.overallWinners.length
+          ? `${formatScore(result.bestScore)} of ${result.metricWinners.length} scored metrics`
+          : `${result.metricWinners.length} scored metrics`;
+        const metricItems = result.metricWinners.slice(0, 6).map(winner => `
+          <li><strong>${escapeHtml(winner.metric)}</strong><span>${escapeHtml(winner.names.join(" / "))}</span></li>
+        `).join("");
+        const moreCount = result.metricWinners.length - 6;
+        const moreItem = moreCount > 0 ? `<li><strong>More</strong><span>${moreCount} additional metric winners below</span></li>` : "";
+        return `
+          <article class="winner-card">
+            <h3>${escapeHtml(result.sheet.title)}</h3>
+            <span class="overall-winner">${escapeHtml(overall)}</span>
+            <span class="winner-score">${escapeHtml(scoreText)}</span>
+            <ul class="metric-winner-list">${metricItems}${moreItem}</ul>
+          </article>
+        `;
+      }).join("");
+
+      winnerOverview.innerHTML = `
+        <section class="panel winners-overview">
+          <div class="overview-head">
+            <h2>Winner Overview</h2>
+            <span>${scoredResults.length} categories with scored winners</span>
+          </div>
+          <div class="winner-grid">${cards}</div>
+        </section>
+      `;
+    }
+
+    function sheetNote(sheet) {
+      const sheetKey = normalizedKey(sheet.title);
+      if (sheetKey === "range") {
+        return "Multiple values in a cell are separate range rows for the same car, labeled by speed, surface, temperature, and tire.";
+      }
+      if (["noise", "braking"].includes(sheetKey)) {
+        return "Multiple values in a cell are separate test rows for the same car, labeled by condition where available.";
+      }
+      return "";
+    }
+
+    function renderComparison() {
+      const cars = [...state.selectedCars].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+      if (!state.workbook) {
+        winnerOverview.innerHTML = "";
+        compareArea.innerHTML = `<div class="panel empty">Loading workbook</div>`;
+        return;
+      }
+      if (!cars.length) {
+        winnerOverview.innerHTML = "";
+        compareArea.innerHTML = `<div class="panel empty">No cars selected</div>`;
+        return;
+      }
+      const results = enabledSheets()
+        .filter(sheet => sheet.headers.includes("Car"))
+        .map(sheet => categoryResult(sheet, cars))
+        .filter(result => result.rows.length || result.presentCount > 0);
+
+      renderWinnerOverview(results, cars);
+
+      const sections = [];
+      for (const result of results) {
+        const { sheet, rows, presentCount } = result;
+        const overallText = result.overallWinners.length ? `Overall: ${result.overallWinners.join(" / ")} • ` : "";
+        const note = sheetNote(sheet);
+        const head = `<tr><th>Metric</th><th>Winner</th>${cars.map(car => `<th>${escapeHtml(car)}</th>`).join("")}</tr>`;
+        const body = rows.map(row => {
+          const winner = row.winner;
+          const metricNote = winner ? `<span class="metric-note">${escapeHtml(winner.note)}</span>` : "";
+          const summary = winner ? winner.names.join(" / ") : "-";
+          const cells = row.values.map((value, index) => {
+            if (!value) return `<td class="missing">Missing</td>`;
+            const winnerClass = winner?.indexes.has(index) ? " class=\"winner\"" : "";
+            const tag = winner?.indexes.has(index) ? `<span class="winner-tag">winner</span>` : "";
+            return `<td${winnerClass}>${row.displays[index].html}${tag}</td>`;
+          }).join("");
+          return `<tr><td class="metric">${escapeHtml(row.metric)}${metricNote}</td><td class="winner-summary">${escapeHtml(summary)}</td>${cells}</tr>`;
+        }).join("");
+        sections.push(`
+          <section class="panel sheet-section">
+            <div class="sheet-title"><h3>${escapeHtml(sheet.title)}${note ? `<span class="sheet-note">${escapeHtml(note)}</span>` : ""}</h3><span>${escapeHtml(overallText)}${presentCount}/${cars.length} cars</span></div>
+            <div class="table-wrap"><table>${head}${body || `<tr><td class="empty" colspan="${cars.length + 2}">No metrics matched</td></tr>`}</table></div>
+          </section>
+        `);
+      }
+      compareArea.innerHTML = sections.join("") || `<div class="panel empty">No selected cars appear in the selected tabs</div>`;
+    }
+
+    function renderRawSheetOptions() {
+      rawSheet.innerHTML = loadedSheets().map(sheet => `<option value="${escapeHtml(sheet.gid)}" ${sheet.gid === state.activeGid ? "selected" : ""}>${escapeHtml(sheet.title)}</option>`).join("");
+    }
+
+    function renderRawTable() {
+      const sheet = loadedSheets().find(candidate => candidate.gid === state.activeGid);
+      if (!sheet) {
+        rawTable.innerHTML = `<div class="empty">No rows</div>`;
+        return;
+      }
+      const query = rawFilter.value.trim().toLowerCase();
+      const rows = sheet.rows.filter(row => !query || Object.values(row).some(value => String(value).toLowerCase().includes(query))).slice(0, 500);
+      const head = `<tr>${sheet.headers.filter(Boolean).map(header => `<th>${escapeHtml(header)}</th>`).join("")}</tr>`;
+      const body = rows.map(row => `<tr>${sheet.headers.filter(Boolean).map(header => `<td>${escapeHtml(row[header] ?? "")}</td>`).join("")}</tr>`).join("");
+      rawTable.innerHTML = `<table>${head}${body}</table>`;
+    }
+
+    function copyComparisonCsv() {
+      const cars = [...state.selectedCars].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+      if (!cars.length) return;
+      const lines = [["Test", "Metric", ...cars].map(csvCell).join(",")];
+      for (const sheet of enabledSheets()) {
+        if (!sheet.headers.includes("Car")) continue;
+        for (const row of comparisonRowsForSheet(sheet, cars)) {
+          lines.push([sheet.title, row.metric, ...row.values].map(csvCell).join(","));
+        }
+      }
+      navigator.clipboard.writeText(lines.join("\n"));
+      setStatus(`Copied comparison for ${cars.length} cars`);
+    }
+
+    loadButton.addEventListener("click", () => loadWorkbook(true));
+    carSearch.addEventListener("input", renderCars);
+    rawSheet.addEventListener("change", () => {
+      state.activeGid = rawSheet.value;
+      renderRawTable();
+    });
+    rawFilter.addEventListener("input", renderRawTable);
+
+    sourceInput.value = defaultSource;
+    loadWorkbook(false);
+  </script>
+</body>
+</html>
