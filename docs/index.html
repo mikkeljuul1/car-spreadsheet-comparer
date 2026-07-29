@@ -500,7 +500,7 @@
 
     .winner-card > summary {
       display: grid;
-      grid-template-columns: minmax(5rem, 0.45fr) minmax(0, 1fr);
+      grid-template-columns: minmax(9rem, 0.55fr) minmax(0, 1fr);
       gap: 0.7rem;
       align-items: center;
       list-style: none;
@@ -516,9 +516,11 @@
     }
 
     .winner-card h3 {
+      min-width: 0;
       margin: 0;
       color: var(--track);
       font-size: 0.98rem;
+      overflow-wrap: anywhere;
     }
 
     .overall-winner {
@@ -834,6 +836,12 @@
 
       .workspace-bar {
         top: 0.5rem;
+      }
+    }
+
+    @media (min-width: 921px) {
+      .view-tabs {
+        grid-template-columns: repeat(2, auto);
       }
     }
 
@@ -1166,6 +1174,10 @@
     const selectionNames = document.querySelector("#selectionNames");
     const filterSelectionCount = document.querySelector("#filterSelectionCount");
     const copyLinkButton = document.querySelector("#copyLink");
+    const summaryTab = document.querySelector("#summaryTab");
+    const comparisonTab = document.querySelector("#comparisonTab");
+    const summaryView = document.querySelector("#summaryView");
+    const comparisonView = document.querySelector("#comparisonView");
     const viewTabs = [...document.querySelectorAll("[data-view]")];
     const viewPanels = [...document.querySelectorAll("[role='tabpanel']")];
     const mobileFilters = window.matchMedia("(max-width: 920px)");
@@ -1184,14 +1196,42 @@
     }
 
     function setActiveView(view) {
-      state.activeView = view;
+      const desktopLayout = !mobileFilters.matches;
+      const combinedResults = desktopLayout && view !== "data";
+      state.activeView = combinedResults ? "summary" : view;
+      summaryTab.textContent = mobileFilters.matches ? "Summary" : "Results";
+      summaryTab.setAttribute("aria-controls", combinedResults ? "summaryView comparisonView" : "summaryView");
+      comparisonTab.hidden = !mobileFilters.matches;
+
+      if (desktopLayout) {
+        summaryView.setAttribute("role", "region");
+        summaryView.setAttribute("aria-label", "Winner summary");
+        summaryView.removeAttribute("aria-labelledby");
+        comparisonView.setAttribute("role", "region");
+        comparisonView.setAttribute("aria-label", "Detailed comparison");
+        comparisonView.removeAttribute("aria-labelledby");
+      } else {
+        summaryView.setAttribute("role", "tabpanel");
+        summaryView.setAttribute("aria-labelledby", "summaryTab");
+        summaryView.removeAttribute("aria-label");
+        comparisonView.setAttribute("role", "tabpanel");
+        comparisonView.setAttribute("aria-labelledby", "comparisonTab");
+        comparisonView.removeAttribute("aria-label");
+      }
+
       for (const tab of viewTabs) {
-        const active = tab.dataset.view === view;
+        const active = tab.dataset.view === state.activeView;
         tab.setAttribute("aria-selected", String(active));
         tab.tabIndex = active ? 0 : -1;
       }
-      for (const panel of viewPanels) {
-        panel.hidden = panel.id !== `${view}View`;
+
+      if (combinedResults) {
+        summaryView.hidden = false;
+        comparisonView.hidden = false;
+      } else {
+        for (const panel of viewPanels) {
+          panel.hidden = panel.id !== `${state.activeView}View`;
+        }
       }
       syncUrlState();
     }
@@ -2076,6 +2116,7 @@
     mobileFilters.addEventListener("change", event => {
       if (!event.matches) document.body.classList.remove("filters-open");
       syncFilterAccessibility();
+      setActiveView(state.activeView);
     });
     document.addEventListener("keydown", event => {
       if (event.key === "Escape" && document.body.classList.contains("filters-open")) {
@@ -2093,10 +2134,11 @@
       tab.addEventListener("keydown", event => {
         if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
         event.preventDefault();
+        const availableTabs = viewTabs.filter(candidate => !candidate.hidden);
         const offset = event.key === "ArrowRight" ? 1 : -1;
-        const index = (viewTabs.indexOf(tab) + offset + viewTabs.length) % viewTabs.length;
-        viewTabs[index].focus();
-        setActiveView(viewTabs[index].dataset.view);
+        const index = (availableTabs.indexOf(tab) + offset + availableTabs.length) % availableTabs.length;
+        availableTabs[index].focus();
+        setActiveView(availableTabs[index].dataset.view);
       });
     }
     for (const button of document.querySelectorAll("[data-test-preset]")) {
