@@ -50,6 +50,11 @@
     button.danger { border-color: rgba(200, 77, 47, 0.35); color: #8f2f1c; }
     button.active { background: var(--track-2); border-color: var(--track-2); color: white; }
 
+    button:focus-visible, summary:focus-visible {
+      outline: 3px solid rgba(15, 124, 122, 0.28);
+      outline-offset: 2px;
+    }
+
     input, select {
       width: 100%;
       border: 1px solid var(--line);
@@ -69,7 +74,7 @@
     }
 
     header {
-      padding: 1rem 1.25rem 0.8rem;
+      padding: 0.72rem 1rem;
       background: rgba(247, 243, 234, 0.92);
       backdrop-filter: blur(18px);
       border-bottom: 1px solid var(--line);
@@ -80,9 +85,9 @@
 
     .topbar {
       display: grid;
-      grid-template-columns: minmax(13rem, 0.8fr) minmax(16rem, 1.8fr) auto auto;
+      grid-template-columns: minmax(13rem, 1fr) auto auto;
       gap: 0.75rem;
-      align-items: end;
+      align-items: center;
     }
 
     h1 {
@@ -118,11 +123,45 @@
     }
 
     .status {
-      min-width: 15rem;
+      min-width: 13rem;
       color: var(--muted);
-      font-size: 0.9rem;
-      align-self: center;
+      font-size: 0.82rem;
       text-align: right;
+    }
+
+    .source-details {
+      position: relative;
+    }
+
+    .source-details > summary {
+      list-style: none;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--panel);
+      padding: 0.52rem 0.72rem;
+      color: var(--track);
+      font-size: 0.82rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .source-details > summary::-webkit-details-marker { display: none; }
+
+    .source-panel {
+      position: absolute;
+      top: calc(100% + 0.5rem);
+      right: 0;
+      z-index: 40;
+      display: grid;
+      grid-template-columns: minmax(18rem, 1fr) auto;
+      gap: 0.65rem;
+      align-items: end;
+      width: min(38rem, calc(100vw - 2rem));
+      padding: 0.8rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
     }
 
     .layout {
@@ -148,9 +187,39 @@
       gap: 0.85rem;
       align-content: start;
       position: sticky;
-      top: 5.8rem;
-      max-height: calc(100vh - 6.7rem);
+      top: 4.9rem;
+      max-height: calc(100vh - 5.8rem);
       overflow: auto;
+    }
+
+    .filters-header, .filters-footer, .filter-overlay {
+      display: none;
+    }
+
+    .block-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.7rem;
+      align-items: baseline;
+      margin-bottom: 0.65rem;
+    }
+
+    .block-head h2 {
+      margin-bottom: 0;
+    }
+
+    .preset-actions {
+      display: flex;
+      gap: 0.2rem;
+    }
+
+    .preset-actions button {
+      border: 0;
+      background: transparent;
+      color: var(--track-2);
+      padding: 0.16rem 0.25rem;
+      font-size: 0.72rem;
+      font-weight: 800;
     }
 
     .block {
@@ -252,7 +321,80 @@
     .main-stack {
       display: grid;
       gap: 1rem;
+      align-content: start;
     }
+
+    .workspace-bar {
+      position: sticky;
+      top: 4.75rem;
+      z-index: 15;
+      display: grid;
+      grid-template-columns: minmax(12rem, 1fr) auto auto;
+      gap: 0.75rem;
+      align-items: center;
+      padding: 0.65rem;
+      background: rgba(255, 250, 240, 0.94);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 8px 26px rgba(29, 39, 43, 0.10);
+    }
+
+    .selection-context {
+      min-width: 0;
+      display: grid;
+      gap: 0.12rem;
+    }
+
+    .selection-context strong {
+      color: var(--track);
+      font-size: 0.88rem;
+    }
+
+    .selection-context span {
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .copy-link {
+      padding: 0.42rem 0.58rem;
+      color: var(--track-2);
+      font-size: 0.76rem;
+      font-weight: 800;
+    }
+
+    .view-tabs {
+      display: inline-grid;
+      grid-template-columns: repeat(3, auto);
+      gap: 0.2rem;
+      padding: 0.2rem;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #eee7da;
+    }
+
+    .view-tabs button {
+      border: 0;
+      background: transparent;
+      padding: 0.4rem 0.64rem;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .view-tabs button[aria-selected="true"] {
+      background: var(--track);
+      color: white;
+    }
+
+    .filter-toggle {
+      display: none;
+    }
+
+    [hidden] { display: none !important; }
 
     .compare-area {
       display: grid;
@@ -260,7 +402,7 @@
     }
 
     .winners-overview {
-      overflow: hidden;
+      overflow: visible;
     }
 
     .overview-head {
@@ -269,8 +411,10 @@
       gap: 0.9rem;
       align-items: stretch;
       padding: 0.85rem 0.95rem;
-      border-bottom: 1px solid var(--line);
+      border: 1px solid var(--line);
+      border-radius: 8px;
       background: linear-gradient(90deg, rgba(29, 111, 66, 0.14), rgba(15, 124, 122, 0.08));
+      box-shadow: 0 8px 26px rgba(29, 39, 43, 0.08);
     }
 
     .overview-head h2 {
@@ -289,6 +433,24 @@
       display: grid;
       align-content: center;
       gap: 0.25rem;
+    }
+
+    .scoring-help {
+      width: fit-content;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+
+    .scoring-help summary {
+      color: var(--track-2);
+      cursor: pointer;
+    }
+
+    .scoring-help p {
+      max-width: 42rem;
+      margin: 0.45rem 0 0;
+      line-height: 1.4;
     }
 
     .grand-winner {
@@ -326,18 +488,35 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
       gap: 0.75rem;
-      padding: 0.85rem;
+      padding: 0.75rem 0 0;
     }
 
     .winner-card {
       border: 1px solid var(--line);
       border-radius: 8px;
       background: #fffdf8;
+      overflow: hidden;
+    }
+
+    .winner-card > summary {
+      display: grid;
+      grid-template-columns: minmax(5rem, 0.45fr) minmax(0, 1fr);
+      gap: 0.7rem;
+      align-items: center;
+      list-style: none;
       padding: 0.75rem;
+      cursor: pointer;
+    }
+
+    .winner-card > summary::-webkit-details-marker { display: none; }
+
+    .winner-card[open] > summary {
+      border-bottom: 1px solid var(--line);
+      background: rgba(32, 59, 70, 0.04);
     }
 
     .winner-card h3 {
-      margin: 0 0 0.45rem;
+      margin: 0;
       color: var(--track);
       font-size: 0.98rem;
     }
@@ -345,9 +524,8 @@
     .overall-winner {
       display: grid;
       gap: 0.1rem;
-      margin-bottom: 0.4rem;
       color: #124729;
-      font-size: 1.02rem;
+      font-size: 0.92rem;
       font-weight: 900;
     }
 
@@ -359,16 +537,18 @@
     }
 
     .winner-score {
+      grid-column: 2;
       color: var(--muted);
       font-size: 0.78rem;
       font-weight: 800;
+      text-align: right;
     }
 
     .metric-winner-list {
       display: grid;
       gap: 0;
-      margin: 0.65rem 0 0;
-      padding: 0;
+      margin: 0;
+      padding: 0.35rem 0.75rem 0.65rem;
       list-style: none;
       color: var(--ink);
       font-size: 0.82rem;
@@ -459,6 +639,22 @@
       width: 12rem;
     }
 
+    .comparison-table th:first-child,
+    .comparison-table td.metric {
+      position: sticky;
+      left: 0;
+    }
+
+    .comparison-table th:first-child {
+      z-index: 7;
+    }
+
+    .comparison-table td.metric {
+      z-index: 4;
+      background: #fffdf8;
+      box-shadow: 1px 0 0 rgba(216, 208, 193, 0.82);
+    }
+
     td.missing {
       color: var(--muted);
       font-style: italic;
@@ -493,13 +689,6 @@
       color: #124729;
       font-weight: 800;
       box-shadow: inset 4px 0 0 var(--good);
-    }
-
-    td.winner-summary {
-      background: rgba(15, 124, 122, 0.10);
-      color: var(--track);
-      font-weight: 800;
-      min-width: 11rem;
     }
 
     .winner-tag {
@@ -561,8 +750,12 @@
     }
 
     @media (max-width: 920px) {
-      .topbar, .layout, .raw-head {
+      .raw-head {
         grid-template-columns: 1fr;
+      }
+
+      .layout {
+        display: block;
       }
 
       .overview-head {
@@ -570,12 +763,77 @@
       }
 
       aside {
-        position: static;
+        position: fixed;
+        inset: 0 auto 0 0;
+        z-index: 60;
+        width: min(23rem, calc(100vw - 2.5rem));
         max-height: none;
+        padding: 0.8rem;
+        overflow: auto;
+        background: var(--paper);
+        box-shadow: 18px 0 46px rgba(29, 39, 43, 0.22);
+        transform: translateX(-105%);
+        transition: transform 180ms ease;
       }
 
-      .status {
-        text-align: left;
+      body.filters-open {
+        overflow: hidden;
+      }
+
+      body.filters-open aside {
+        transform: translateX(0);
+      }
+
+      .filters-header, .filters-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+      }
+
+      .filters-header h2 {
+        margin: 0;
+        color: var(--track);
+        font-size: 1.1rem;
+      }
+
+      .filters-footer {
+        position: sticky;
+        bottom: -0.8rem;
+        margin: 0 -0.8rem -0.8rem;
+        padding: 0.75rem 0.8rem;
+        border-top: 1px solid var(--line);
+        background: rgba(247, 243, 234, 0.96);
+        backdrop-filter: blur(14px);
+      }
+
+      .filters-footer button.primary {
+        flex: 1;
+      }
+
+      .filter-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 55;
+        width: 100%;
+        border: 0;
+        border-radius: 0;
+        background: rgba(23, 33, 38, 0.42);
+        padding: 0;
+      }
+
+      body.filters-open .filter-overlay {
+        display: block;
+      }
+
+      .filter-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .workspace-bar {
+        top: 0.5rem;
       }
     }
 
@@ -589,6 +847,25 @@
       header {
         position: static;
         padding: 0.85rem;
+      }
+
+      .topbar {
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+
+      .status {
+        grid-column: 1 / -1;
+        min-width: 0;
+        text-align: left;
+      }
+
+      .source-panel {
+        position: fixed;
+        top: 4.2rem;
+        right: 0.75rem;
+        left: 0.75rem;
+        grid-template-columns: 1fr;
+        width: auto;
       }
 
       h1 {
@@ -611,6 +888,21 @@
       .layout {
         gap: 0.75rem;
         padding: 0.75rem;
+      }
+
+      .workspace-bar {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 0.55rem;
+        margin: -0.1rem 0 0;
+      }
+
+      .view-tabs {
+        grid-column: 1 / -1;
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .view-tabs button {
+        padding: 0.48rem 0.3rem;
       }
 
       aside {
@@ -676,6 +968,16 @@
         gap: 0.18rem;
       }
 
+      .winner-card > summary {
+        grid-template-columns: 1fr;
+        gap: 0.3rem;
+      }
+
+      .winner-score {
+        grid-column: auto;
+        text-align: left;
+      }
+
       .metric-separator {
         display: none;
       }
@@ -710,18 +1012,35 @@
           <h1>Car Comparer</h1>
           <div class="credit">Spreadsheet created and maintained by <a href="https://www.youtube.com/@bjornnyland" target="_blank" rel="noopener noreferrer">Bjørn Nyland</a>.</div>
         </div>
-        <label>Spreadsheet URL
-          <input id="sourceInput" autocomplete="off">
-        </label>
-        <button id="loadButton" class="primary">Load workbook</button>
-        <div id="status" class="status">Idle</div>
+        <details class="source-details" id="sourceDetails">
+          <summary>Data source</summary>
+          <div class="source-panel">
+            <label>Spreadsheet URL
+              <input id="sourceInput" autocomplete="off">
+            </label>
+            <button id="loadButton" class="primary">Load workbook</button>
+          </div>
+        </details>
+        <div id="status" class="status" role="status" aria-live="polite">Idle</div>
       </div>
     </header>
 
     <div class="layout">
-      <aside>
+      <button class="filter-overlay" id="filterOverlay" aria-label="Close filters"></button>
+      <aside id="filtersPanel" aria-label="Comparison filters">
+        <div class="filters-header">
+          <h2>Filters</h2>
+          <button id="closeFilters" aria-label="Close filters">Close</button>
+        </div>
         <section class="panel block">
-          <h2>Tests</h2>
+          <div class="block-head">
+            <h2>Tests</h2>
+            <div class="preset-actions" aria-label="Test presets">
+              <button data-test-preset="recommended">Recommended</button>
+              <button data-test-preset="all">All</button>
+              <button data-test-preset="none">None</button>
+            </div>
+          </div>
           <div class="tests" id="tests"></div>
         </section>
 
@@ -731,27 +1050,53 @@
           <div class="selected-cars" id="selectedCars"></div>
           <div class="car-list" id="carList"></div>
         </section>
+
+        <div class="filters-footer">
+          <strong id="filterSelectionCount">No cars selected</strong>
+          <button id="viewResults" class="primary">View results</button>
+        </div>
       </aside>
 
       <main class="main-stack">
         <section id="messages"></section>
-        <section id="winnerOverview"></section>
-        <section class="compare-area" id="compareArea"></section>
-
-        <section class="panel raw-panel">
-          <div class="raw-head">
-            <div class="raw-title">
-              <h2>Full Spreadsheet</h2>
-              <p>Raw rows from the selected tab</p>
-            </div>
-            <label>Tab
-              <select id="rawSheet"></select>
-            </label>
-            <label>Row filter
-              <input id="rawFilter" placeholder="Filter rows" autocomplete="off">
-            </label>
+        <div class="workspace-bar">
+          <button class="filter-toggle" id="filterToggle" aria-controls="filtersPanel" aria-expanded="false">Filters</button>
+          <div class="selection-context">
+            <strong id="selectionCount">No cars selected</strong>
+            <span id="selectionNames">Choose cars to begin comparing</span>
           </div>
-          <div class="table-wrap" id="rawTable"></div>
+          <button id="copyLink" class="copy-link">Copy link</button>
+          <div class="view-tabs" role="tablist" aria-label="Comparison views">
+            <button id="summaryTab" role="tab" aria-selected="true" aria-controls="summaryView" data-view="summary">Summary</button>
+            <button id="comparisonTab" role="tab" aria-selected="false" aria-controls="comparisonView" data-view="comparison">Comparison</button>
+            <button id="dataTab" role="tab" aria-selected="false" aria-controls="dataView" data-view="data">Raw data</button>
+          </div>
+        </div>
+
+        <section id="summaryView" role="tabpanel" aria-labelledby="summaryTab">
+          <section id="winnerOverview"></section>
+        </section>
+
+        <section id="comparisonView" role="tabpanel" aria-labelledby="comparisonTab" hidden>
+          <section class="compare-area" id="compareArea"></section>
+        </section>
+
+        <section id="dataView" role="tabpanel" aria-labelledby="dataTab" hidden>
+          <section class="panel raw-panel">
+            <div class="raw-head">
+              <div class="raw-title">
+                <h2>Full Spreadsheet</h2>
+                <p>Raw rows from the selected test</p>
+              </div>
+              <label>Test
+                <select id="rawSheet"></select>
+              </label>
+              <label>Row filter
+                <input id="rawFilter" placeholder="Filter rows" autocomplete="off">
+              </label>
+            </div>
+            <div class="table-wrap" id="rawTable"></div>
+          </section>
         </section>
       </main>
     </div>
@@ -769,6 +1114,16 @@
       "arctic circle",
       "bangkok",
     ]);
+    const testDescriptions = new Map([
+      ["banana", "Cargo capacity measured with banana boxes"],
+      ["sunday", "Energy use and range from the Sunday driving test"],
+      ["geilo", "Geilo trip test"],
+      ["degradation", "Battery health and capacity degradation"],
+      ["zero mile", "Behavior after reaching zero indicated range"],
+      ["500 km", "500 km trip test"],
+      ["arctic circle", "Arctic Circle trip test"],
+      ["bangkok", "Bangkok trip test"],
+    ]);
     const analyticsConfig = {
       code: "mikkeljuul1",
       scriptUrl: "https://gc.zgo.at/count.js",
@@ -785,6 +1140,8 @@
       lastComparisonSignature: "",
       analyticsReady: false,
       pendingAnalyticsEvents: [],
+      activeView: "summary",
+      carPickerOpen: false,
     };
 
     const sourceInput = document.querySelector("#sourceInput");
@@ -800,6 +1157,139 @@
     const rawSheet = document.querySelector("#rawSheet");
     const rawFilter = document.querySelector("#rawFilter");
     const rawTable = document.querySelector("#rawTable");
+    const filtersPanel = document.querySelector("#filtersPanel");
+    const filterToggle = document.querySelector("#filterToggle");
+    const filterOverlay = document.querySelector("#filterOverlay");
+    const closeFiltersButton = document.querySelector("#closeFilters");
+    const viewResultsButton = document.querySelector("#viewResults");
+    const selectionCount = document.querySelector("#selectionCount");
+    const selectionNames = document.querySelector("#selectionNames");
+    const filterSelectionCount = document.querySelector("#filterSelectionCount");
+    const copyLinkButton = document.querySelector("#copyLink");
+    const viewTabs = [...document.querySelectorAll("[data-view]")];
+    const viewPanels = [...document.querySelectorAll("[role='tabpanel']")];
+    const mobileFilters = window.matchMedia("(max-width: 920px)");
+
+    function syncFilterAccessibility() {
+      const concealed = mobileFilters.matches && !document.body.classList.contains("filters-open");
+      filtersPanel.inert = concealed;
+      if (concealed) filtersPanel.setAttribute("aria-hidden", "true");
+      else filtersPanel.removeAttribute("aria-hidden");
+    }
+
+    function setFiltersOpen(open) {
+      document.body.classList.toggle("filters-open", open);
+      filterToggle.setAttribute("aria-expanded", String(open));
+      syncFilterAccessibility();
+    }
+
+    function setActiveView(view) {
+      state.activeView = view;
+      for (const tab of viewTabs) {
+        const active = tab.dataset.view === view;
+        tab.setAttribute("aria-selected", String(active));
+        tab.tabIndex = active ? 0 : -1;
+      }
+      for (const panel of viewPanels) {
+        panel.hidden = panel.id !== `${view}View`;
+      }
+      syncUrlState();
+    }
+
+    function selectedCarLabel(count) {
+      return count === 1 ? "1 car selected" : `${count} cars selected`;
+    }
+
+    function updateSelectionContext() {
+      const cars = [...state.selectedCars].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+      const label = cars.length ? selectedCarLabel(cars.length) : "No cars selected";
+      selectionCount.textContent = label;
+      filterSelectionCount.textContent = label;
+      selectionNames.textContent = cars.length ? cars.join(" · ") : "Choose cars to begin comparing";
+    }
+
+    function applyTestPreset(preset) {
+      if (preset === "all") {
+        state.selectedGids = new Set(comparableSheets().map(sheet => sheet.gid));
+      } else if (preset === "none") {
+        state.selectedGids.clear();
+      } else {
+        state.selectedGids = new Set(loadedSheets()
+          .filter(sheet => !defaultDisabledSheets.has(sheet.title.toLowerCase()))
+          .map(sheet => sheet.gid));
+      }
+      pruneUnavailableSelectedCars();
+      renderTests();
+      renderCars();
+      renderSelectedCars();
+      renderComparison();
+      syncUrlState();
+    }
+
+    function defaultSelectedGids() {
+      return new Set(comparableSheets()
+        .filter(sheet => !defaultDisabledSheets.has(sheet.title.toLowerCase()))
+        .map(sheet => sheet.gid));
+    }
+
+    function restoreUrlState() {
+      const params = new URLSearchParams(window.location.search);
+      const validTestGids = new Set(comparableSheets().map(sheet => sheet.gid));
+      const validRawGids = new Set(loadedSheets().map(sheet => sheet.gid));
+      if (params.has("tests")) {
+        state.selectedGids = new Set((params.get("tests") || "").split(",").filter(gid => validTestGids.has(gid)));
+      } else {
+        state.selectedGids = defaultSelectedGids();
+      }
+
+      state.selectedCars = new Set(params.getAll("car")
+        .map(car => canonicalCarName(car))
+        .filter(car => state.carEntries.has(car)));
+
+      const requestedSheet = params.get("sheet");
+      state.activeGid = validRawGids.has(requestedSheet) ? requestedSheet : loadedSheets()[0]?.gid ?? null;
+      const requestedView = params.get("view");
+      state.activeView = ["summary", "comparison", "data"].includes(requestedView) ? requestedView : "summary";
+    }
+
+    function sameSet(first, second) {
+      return first.size === second.size && [...first].every(value => second.has(value));
+    }
+
+    function syncUrlState() {
+      if (!state.workbook) return;
+      const url = new URL(window.location.href);
+      url.searchParams.delete("car");
+      for (const car of [...state.selectedCars].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))) {
+        url.searchParams.append("car", car);
+      }
+
+      const defaults = defaultSelectedGids();
+      if (sameSet(state.selectedGids, defaults)) url.searchParams.delete("tests");
+      else url.searchParams.set("tests", [...state.selectedGids].join(","));
+
+      if (state.activeView === "summary") url.searchParams.delete("view");
+      else url.searchParams.set("view", state.activeView);
+
+      const firstGid = loadedSheets()[0]?.gid;
+      if (state.activeGid && state.activeGid !== firstGid) url.searchParams.set("sheet", state.activeGid);
+      else url.searchParams.delete("sheet");
+
+      const source = sourceInput.value.trim() || defaultSource;
+      if (source === defaultSource) url.searchParams.delete("source");
+      else url.searchParams.set("source", source);
+      window.history.replaceState(null, "", url);
+    }
+
+    async function copyShareLink() {
+      syncUrlState();
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        setStatus("Comparison link copied");
+      } catch (_error) {
+        setStatus("Could not copy link");
+      }
+    }
 
     function escapeHtml(value) {
       return String(value ?? "").replace(/[&<>"']/g, character => ({
@@ -876,8 +1366,12 @@
       return state.workbook ? state.workbook.sheets.filter(sheet => !sheet.error) : [];
     }
 
+    function comparableSheets() {
+      return loadedSheets().filter(sheet => sheet.headers.includes("Car"));
+    }
+
     function enabledSheets() {
-      return loadedSheets().filter(sheet => state.selectedGids.has(sheet.gid));
+      return comparableSheets().filter(sheet => state.selectedGids.has(sheet.gid));
     }
 
     function allCarNames() {
@@ -1243,15 +1737,14 @@
         const result = await fetchWorkbook(source, refresh);
         state.workbook = result.workbook;
         deriveWorkbookData();
-        state.selectedGids = new Set(loadedSheets()
-          .filter(sheet => !defaultDisabledSheets.has(sheet.title.toLowerCase()))
-          .map(sheet => sheet.gid));
-        state.activeGid = loadedSheets()[0]?.gid ?? null;
-        state.selectedCars.clear();
+        restoreUrlState();
         renderAll();
+        setActiveView(state.activeView);
+        syncUrlState();
         const summary = state.workbook.summary;
         const snapshotText = result.staticSnapshot && state.workbook.generatedAt ? ` snapshot ${state.workbook.generatedAt.slice(0, 10)}` : "";
-        setStatus(`${summary.loadedSheetCount}/${summary.sheetCount} tabs, ${summary.rowCount} rows${snapshotText}`);
+        setStatus(`${summary.loadedSheetCount}/${summary.sheetCount} tests, ${summary.rowCount} rows${snapshotText}`);
+        document.querySelector("#sourceDetails").open = false;
       } catch (error) {
         messages.innerHTML = `<div class="panel error">${escapeHtml(error.message)}</div>`;
         setStatus("Load failed");
@@ -1281,10 +1774,11 @@
 
     function renderTests() {
       testsNode.innerHTML = "";
-      for (const sheet of loadedSheets()) {
+      for (const sheet of comparableSheets()) {
         const id = `test-${sheet.gid}`;
         const label = document.createElement("label");
         label.className = `test-chip ${state.selectedGids.has(sheet.gid) ? "selected" : ""}`;
+        label.title = testDescriptions.get(sheet.title.toLowerCase()) ?? `${sheet.title} comparison test`;
         label.innerHTML = `<input id="${id}" type="checkbox" ${state.selectedGids.has(sheet.gid) ? "checked" : ""}> <span>${escapeHtml(sheet.title)}</span>`;
         label.querySelector("input").addEventListener("change", event => {
           if (event.target.checked) state.selectedGids.add(sheet.gid);
@@ -1294,6 +1788,7 @@
           renderCars();
           renderSelectedCars();
           renderComparison();
+          syncUrlState();
         });
         testsNode.append(label);
       }
@@ -1313,9 +1808,15 @@
     function renderCars() {
       const query = carSearch.value.trim();
       const cars = carIndex().filter(car => carMatchesSearch(car, query)).slice(0, 250);
+      carList.hidden = !state.carPickerOpen;
+      if (!state.carPickerOpen) {
+        carList.innerHTML = "";
+        return;
+      }
       carList.innerHTML = cars.map(car => {
         const active = state.selectedCars.has(car.name) ? " active" : "";
-        return `<button class="car-row${active}" data-car="${escapeHtml(car.name)}"><span>${escapeHtml(car.name)}</span><span class="count">${car.sheets.size} tabs</span></button>`;
+        const testCount = car.sheets.size;
+        return `<button class="car-row${active}" data-car="${escapeHtml(car.name)}"><span>${escapeHtml(car.name)}</span><span class="count">${testCount} ${testCount === 1 ? "test" : "tests"}</span></button>`;
       }).join("") || `<div class="empty">No matching cars</div>`;
       for (const button of carList.querySelectorAll("button[data-car]")) {
         button.addEventListener("click", () => {
@@ -1333,16 +1834,21 @@
               title: car,
             });
           }
+          carSearch.value = "";
+          carSearch.blur();
+          state.carPickerOpen = false;
           renderCars();
           renderSelectedCars();
           renderComparison();
+          syncUrlState();
         });
       }
     }
 
     function renderSelectedCars() {
       const cars = [...state.selectedCars].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
-      selectedCarsNode.innerHTML = cars.map(car => `<span class="chip">${escapeHtml(car)} <button data-remove="${escapeHtml(car)}" title="Remove">x</button></span>`).join("");
+      selectedCarsNode.innerHTML = cars.map(car => `<span class="chip">${escapeHtml(car)} <button data-remove="${escapeHtml(car)}" aria-label="Remove ${escapeHtml(car)}">×</button></span>`).join("");
+      updateSelectionContext();
       for (const button of selectedCarsNode.querySelectorAll("button[data-remove]")) {
         button.addEventListener("click", () => {
           const car = button.dataset.remove;
@@ -1350,6 +1856,7 @@
           renderCars();
           renderSelectedCars();
           renderComparison();
+          syncUrlState();
         });
       }
     }
@@ -1396,8 +1903,12 @@
 
     function renderWinnerOverview(results, cars) {
       const scoredResults = results.filter(result => result.metricWinners.length);
-      if (!cars.length || !scoredResults.length) {
-        winnerOverview.innerHTML = "";
+      if (cars.length < 2) {
+        winnerOverview.innerHTML = `<div class="panel empty"><strong>Select at least two cars</strong><br>Winner summaries appear when comparable test data is available.</div>`;
+        return;
+      }
+      if (!scoredResults.length) {
+        winnerOverview.innerHTML = `<div class="panel empty">No scored metrics are available for these cars and tests.</div>`;
         return;
       }
 
@@ -1423,27 +1934,31 @@
         const scoreText = result.overallWinners.length
           ? `${formatScore(result.bestScore)} of ${result.metricWinners.length} scored metrics`
           : `${result.metricWinners.length} scored metrics`;
-        const metricItems = result.metricWinners.slice(0, 6).map(winner => `
+        const metricItems = result.metricWinners.map(winner => `
           <li><strong>${escapeHtml(winner.metric)}</strong><span class="metric-separator">→</span><span>${escapeHtml(winner.names.join(" / "))}</span></li>
         `).join("");
-        const moreCount = result.metricWinners.length - 6;
-        const moreItem = moreCount > 0 ? `<li><strong>More</strong><span class="metric-separator">→</span><span>${moreCount} additional metric winners below</span></li>` : "";
         return `
-          <article class="winner-card">
-            <h3>${escapeHtml(result.sheet.title)}</h3>
-            <span class="overall-winner"><span class="card-label">Category winner</span><span>${escapeHtml(overall)}</span></span>
-            <span class="winner-score">${escapeHtml(scoreText)}</span>
-            <ul class="metric-winner-list">${metricItems}${moreItem}</ul>
-          </article>
+          <details class="winner-card">
+            <summary>
+              <h3>${escapeHtml(result.sheet.title)}</h3>
+              <span class="overall-winner"><span class="card-label">Category winner</span><span>${escapeHtml(overall)}</span></span>
+              <span class="winner-score">${escapeHtml(scoreText)}</span>
+            </summary>
+            <ul class="metric-winner-list">${metricItems}</ul>
+          </details>
         `;
       }).join("");
 
       winnerOverview.innerHTML = `
-        <section class="panel winners-overview">
+        <section class="winners-overview">
           <div class="overview-head">
             <div class="overview-copy">
               <h2>Winner Overview</h2>
-              <span>Category winners and metric winners at a glance</span>
+              <span>Category winners at a glance</span>
+              <details class="scoring-help">
+                <summary>How scoring works</summary>
+                <p>Each scored metric is worth one point, split evenly for ties. The highest metric score wins a category, and each category contributes one point toward the overall result.</p>
+              </details>
             </div>
             <div class="grand-winner">
               <span class="grand-label">Overall winner</span>
@@ -1477,14 +1992,14 @@
       }
       if (!cars.length) {
         state.lastComparisonSignature = "";
-        winnerOverview.innerHTML = "";
+        renderWinnerOverview([], cars);
         compareArea.innerHTML = `<div class="panel empty">No cars selected</div>`;
         return;
       }
       const results = enabledSheets()
         .filter(sheet => sheet.headers.includes("Car"))
         .map(sheet => categoryResult(sheet, cars))
-        .filter(result => result.rows.length || result.presentCount > 0);
+        .filter(result => result.presentCount > 0);
 
       renderWinnerOverview(results, cars);
 
@@ -1493,27 +2008,26 @@
         const { sheet, rows, presentCount } = result;
         const overallText = result.overallWinners.length ? `Overall: ${result.overallWinners.join(" / ")} • ` : "";
         const note = sheetNote(sheet);
-        const head = `<tr><th>Metric</th><th>Winner</th>${cars.map(car => `<th>${escapeHtml(car)}</th>`).join("")}</tr>`;
+        const head = `<tr><th>Metric</th>${cars.map(car => `<th>${escapeHtml(car)}</th>`).join("")}</tr>`;
         const body = rows.map(row => {
           const winner = row.winner;
           const metricNote = winner ? `<span class="metric-note">${escapeHtml(winner.note)}</span>` : "";
-          const summary = winner ? winner.names.join(" / ") : "-";
           const cells = row.values.map((value, index) => {
             if (!value) return `<td class="missing">Missing</td>`;
             const winnerClass = winner?.indexes.has(index) ? " class=\"winner\"" : "";
             const tag = winner?.indexes.has(index) ? `<span class="winner-tag">winner</span>` : "";
             return `<td${winnerClass}>${row.displays[index].html}${tag}</td>`;
           }).join("");
-          return `<tr><td class="metric">${escapeHtml(row.metric)}${metricNote}</td><td class="winner-summary">${escapeHtml(summary)}</td>${cells}</tr>`;
+          return `<tr><td class="metric">${escapeHtml(row.metric)}${metricNote}</td>${cells}</tr>`;
         }).join("");
         sections.push(`
           <section class="panel sheet-section">
             <div class="sheet-title"><h3>${escapeHtml(sheet.title)}${note ? `<span class="sheet-note">${escapeHtml(note)}</span>` : ""}</h3><span>${escapeHtml(overallText)}${presentCount}/${cars.length} cars</span></div>
-            <div class="table-wrap"><table>${head}${body || `<tr><td class="empty" colspan="${cars.length + 2}">No metrics matched</td></tr>`}</table></div>
+            <div class="table-wrap"><table class="comparison-table">${head}${body || `<tr><td class="empty" colspan="${cars.length + 1}">No metrics matched</td></tr>`}</table></div>
           </section>
         `);
       }
-      compareArea.innerHTML = sections.join("") || `<div class="panel empty">No selected cars appear in the selected tabs</div>`;
+      compareArea.innerHTML = sections.join("") || `<div class="panel empty">No selected cars appear in the selected tests</div>`;
     }
 
     function renderRawSheetOptions() {
@@ -1548,14 +2062,58 @@
     }
 
     loadButton.addEventListener("click", () => loadWorkbook(true));
-    carSearch.addEventListener("input", renderCars);
+    carSearch.addEventListener("focus", () => {
+      state.carPickerOpen = true;
+      renderCars();
+    });
+    carSearch.addEventListener("input", () => {
+      state.carPickerOpen = true;
+      renderCars();
+    });
+    filterToggle.addEventListener("click", () => setFiltersOpen(true));
+    filterOverlay.addEventListener("click", () => setFiltersOpen(false));
+    closeFiltersButton.addEventListener("click", () => setFiltersOpen(false));
+    mobileFilters.addEventListener("change", event => {
+      if (!event.matches) document.body.classList.remove("filters-open");
+      syncFilterAccessibility();
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && document.body.classList.contains("filters-open")) {
+        setFiltersOpen(false);
+        filterToggle.focus();
+      }
+    });
+    viewResultsButton.addEventListener("click", () => {
+      setFiltersOpen(false);
+      setActiveView("summary");
+      document.querySelector(".workspace-bar").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    for (const tab of viewTabs) {
+      tab.addEventListener("click", () => setActiveView(tab.dataset.view));
+      tab.addEventListener("keydown", event => {
+        if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+        event.preventDefault();
+        const offset = event.key === "ArrowRight" ? 1 : -1;
+        const index = (viewTabs.indexOf(tab) + offset + viewTabs.length) % viewTabs.length;
+        viewTabs[index].focus();
+        setActiveView(viewTabs[index].dataset.view);
+      });
+    }
+    for (const button of document.querySelectorAll("[data-test-preset]")) {
+      button.addEventListener("click", () => applyTestPreset(button.dataset.testPreset));
+    }
     rawSheet.addEventListener("change", () => {
       state.activeGid = rawSheet.value;
       renderRawTable();
+      syncUrlState();
     });
     rawFilter.addEventListener("input", renderRawTable);
+    copyLinkButton.addEventListener("click", copyShareLink);
 
-    sourceInput.value = defaultSource;
+    sourceInput.value = new URLSearchParams(window.location.search).get("source") || defaultSource;
+    setFiltersOpen(false);
+    setActiveView("summary");
+    updateSelectionContext();
     loadAnalytics();
     loadWorkbook(false);
   </script>

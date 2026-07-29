@@ -45,9 +45,10 @@ python3 car_compare.py --gui
 The website lets you:
 
 - Search and choose cars once.
-- Turn spreadsheet tabs on or off as test groups.
-- Compare metrics with cars as columns and tests as sections.
-- See winner summaries, detailed comparison tables, and raw spreadsheet rows.
+- Turn spreadsheet tests on or off with recommended, all, and none presets.
+- Switch between compact winner summaries, detailed comparison tables, and raw spreadsheet rows.
+- Share or restore a comparison from its URL, including selected cars, tests, and view.
+- Use the same results-first workflow on desktop, tablet, and mobile.
 
 ## GitHub Pages
 
